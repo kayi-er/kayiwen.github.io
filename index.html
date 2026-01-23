@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>kayiwen - 个人主页</title>
+    <style>
+        /* 全局样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            scroll-behavior: smooth; /* 平滑滚动锚点 */
+        }
+
+        /* 页面背景和基础样式 */
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            display: flex; /* 侧边栏+主内容布局 */
+            min-height: 100vh;
+        }
+
+        /* 侧边栏样式 - 核心修改部分 */
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 2rem 1rem;
+            position: fixed; /* 固定侧边栏 */
+            height: 100vh;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            overflow-y: auto; /* 内容过多时滚动 */
+        }
+
+        /* 侧边栏头像/个人信息 */
+        .sidebar-profile {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-profile img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #3498db;
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-profile h2 {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-profile p {
+            color: #bdc3c7;
+            font-size: 0.9rem;
+        }
+
+        /* 侧边栏导航基础样式 */
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* 主导航项 */
+        .nav-main-item {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 0.8rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-main-item:hover,
+        .nav-main-item.active { /* 选中状态 */
+            background-color: #3498db;
+            color: white;
+        }
+
+        /* 学习笔记子菜单样式 */
+        .submenu {
+            list-style: none;
+            margin-left: 1rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        /* 展开子菜单的触发类 */
+        .submenu-open {
+            max-height: 300px; /* 足够容纳子项 */
+        }
+
+        .submenu li {
+            margin-bottom: 0.3rem;
+        }
+
+        .submenu a {
+            color: #bdc3c7;
+            text-decoration: none;
+            display: block;
+            padding: 0.6rem 1rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .submenu a:hover {
+            background-color: #34495e;
+            color: #3498db;
+        }
+
+        /* 侧边栏底部联系方式 */
+        .sidebar-contact {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #34495e;
+        }
+
+        .sidebar-contact a {
+            color: #bdc3c7;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.8rem;
+            font-size: 0.9rem;
+        }
+
+        .sidebar-contact a:hover {
+            color: #3498db;
+        }
+
+        .sidebar-contact i {
+            margin-right: 0.5rem;
+            font-size: 1rem;
+        }
+
+        /* 主内容区域 */
+        .main-content {
+            flex: 1;
+            margin-left: 250px; /* 适配侧边栏宽度 */
+            padding: 2rem;
+        }
+
+        /* 内容卡片样式 */
+        .content-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+
+        .content-card h2 {
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 0.5rem;
+        }
+
+        /* 个人简介样式 */
+        .profile-info p {
+            margin-bottom: 1rem;
+            line-height: 1.8;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+        }
+
+        /* 学习笔记/灵感记录通用样式 */
+        .notes-list {
+            margin-top: 1rem;
+        }
+
+        .notes-item {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* 调整学习笔记标题样式 - 新增 */
+        .notes-item h3 a {
+            color: #3498db;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .notes-item h3 a:hover {
+            color: #2980b9;
+            text-decoration: underline;
+        }
+
+        /* 学习笔记小标题注释样式 - 新增 */
+        .notes-subtitle {
+            font-size: 0.9rem;
+            color: #666;
+            margin: 0.3rem 0 0.8rem 0;
+            font-weight: normal;
+        }
+
+        /* 页脚样式 */
+        footer {
+            text-align: center;
+            color: #7f8c8d;
+            padding: 1rem;
+            margin-top: 2rem;
+            font-size: 0.9rem;
+        }
+
+        /* 移动端响应式适配 */
+        @media (max-width: 768px) {
+            /* 移动端侧边栏改为顶部 */
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 1rem;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .sidebar-profile {
+                margin-bottom: 1rem;
+            }
+
+            .sidebar-profile img {
+                width: 80px;
+                height: 80px;
+            }
+
+            /* 移动端导航横向排列（子菜单折叠） */
+            .sidebar-nav {
+                display: flex;
+                overflow-x: auto;
+                gap: 0.5rem;
+            }
+
+            .sidebar-nav li {
+                margin-bottom: 0;
+            }
+
+            .submenu {
+                display: none; /* 移动端隐藏子菜单，可扩展为点击展开 */
+            }
+
+            .sidebar-contact {
+                display: none; /* 移动端联系方式移到主内容 */
+            }
+        }
+    </style>
+    <!-- 引入图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<!-- 侧边栏 -->
+<aside class="sidebar">
+    <div class="sidebar-profile">
+        <!-- 【替换】头像：替换为你的头像路径（本地/images/avatar.jpg 或在线链接） -->
+        <img src="images/avatar.jpg" alt="个人头像">
+        <!-- kayiwen -->
+        <h2>kayiwen</h2>
+        <!-- BJTU-CS | 持续学习中 -->
+        <p>BJTU-CS | 持续学习中</p>
+    </div>
+
+    <!-- 侧边栏导航 -->
+    <ul class="sidebar-nav">
+        <!-- 个人简介（锚点跳转） -->
+        <li><a href="#profile" class="nav-main-item active">个人简介</a></li>
+
+        <!-- 学习笔记（带展开子菜单） -->
+        <li>
+            <a href="#notes" class="nav-main-item" id="notes-trigger">学习笔记</a>
+            <ul class="submenu" id="notes-submenu">
+                <!-- 【替换】学习笔记子栏目：可增减、修改名称和链接 -->
+                <li><a href="c_lang.html">C语言</a></li> <!-- 【替换】跳转C语言笔记页面 -->
+                <li><a href="c_plus.html">C++</a></li> <!-- 【替换】跳转C++笔记页面 -->
+                <li><a href="python.html">Python</a></li> <!-- 【替换】跳转Python笔记页面 -->
+                <li><a href="html_css.html">HTML/CSS</a></li> <!-- 【替换】跳转HTML/CSS笔记页面 -->
+            </ul>
+        </li>
+
+        <!-- 灵感记录（锚点跳转） -->
+        <li><a href="#inspiration" class="nav-main-item">灵感记录</a></li>
+
+        <!-- 联系方式（锚点跳转） -->
+        <li><a href="#contact" class="nav-main-item">联系方式</a></li>
+    </ul>
+
+    <!-- 侧边栏联系方式（精简版）- 核心修改：公众号格式统一 -->
+    <div class="sidebar-contact">
+        <!-- 【替换】你的邮箱 -->
+        <a href="mailto:kayiwen@outlook.com">
+            <i class="fas fa-envelope"></i> kayiwen@outlook.com
+        </a>
+        <!-- 【替换】你的GitHub链接 -->
+        <a href="https://github.com/kayi-er" target="_blank">
+            <i class="fab fa-github"></i> github.com/kayi-er
+        </a>
+        <!-- 【替换】你的小红书链接 -->
+        <a href="https://www.xiaohongshu.com/user/profile/5cd20855000000001203775f" target="_blank">
+            <i class="fab fa-xiaohongshu"></i> 小红书@kayiii
+        </a>
+        <!-- 公众号：格式统一为a标签（无链接则href="#"），和其他联系方式样式一致 -->
+        <a href="#" style="pointer-events: none;">
+            <i class="fab fa-weixin"></i> 公众号：九无清酒
+        </a>
+    </div>
+</aside>
+
+<!-- 主内容区域 -->
+<main class="main-content">
+    <!-- 1. 个人简介模块 -->
+    <section id="profile" class="content-card">
+        <h2>个人简介</h2>
+        <div class="profile-info">
+            <!-- 【替换】个人简介内容：修改为你的自我介绍 -->
+            <p>你好！我是一名BJTU在读本科生，仍在努力学习中qwq
+            <p>喜欢追番打游戏逛漫展打乒乓！编程水平还很低orz，请多多指教！</p>
+        </div>
+    </section>
+
+    <!-- 2. 学习笔记模块（核心修改） -->
+    <section id="notes" class="content-card">
+        <h2>学习笔记</h2>
+        <div class="notes-list">
+            <!-- 【替换】学习笔记列表：可增减、修改笔记标题和链接 -->
+            <div class="notes-item">
+                <!-- 标题改为可点击链接，注释改为指定文字 -->
+                <h3><a href="c_lang.html">C语言学习笔记</a></h3>
+                <div class="notes-subtitle">点击蓝色标题可跳转到完整笔记界面</div>
+                <p>笔记简介：C语言基础语法、指针、数组等核心知识点总结...</p>
+            </div>
+            <div class="notes-item">
+                <h3><a href="c_plus.html">C++进阶笔记</a></h3>
+                <div class="notes-subtitle">点击蓝色标题可跳转到完整笔记界面</div>
+                <p>笔记简介：面向对象、STL容器、模板等知识点梳理...</p>
+            </div>
+            <div class="notes-item">
+                <h3><a href="python.html">Python入门笔记</a></h3>
+                <div class="notes-subtitle">点击蓝色标题可跳转到完整笔记界面</div>
+                <p>笔记简介：Python基础、爬虫、数据分析入门...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. 灵感记录模块 -->
+    <section id="inspiration" class="content-card">
+        <h2>灵感记录</h2>
+        <div class="notes-list">
+            <!-- 【替换】灵感记录内容：可增减、修改灵感标题和描述 -->
+            <div class="notes-item">
+                <h3>【替换】灵感标题1：比如「用C语言实现简易计算器」</h3>
+                <p>【替换】灵感描述：突然想到可以用C语言的循环和条件判断实现一个简易计算器，支持加减乘除...</p>
+                <p>记录时间：【替换】2026-01-01</p>
+            </div>
+            <div class="notes-item">
+                <h3>【替换】灵感标题2：比如「用Python爬取豆瓣电影Top250」</h3>
+                <p>【替换】灵感描述：想练习爬虫，计划用requests+BeautifulSoup爬取豆瓣电影Top250，整理成Excel...</p>
+                <p>记录时间：【替换】2026-01-05</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. 联系方式模块 -->
+    <section id="contact" class="content-card">
+        <h2>联系方式</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 1rem;">
+            <!-- 【替换】你的邮箱 -->
+            <a href="mailto:kayiwen@outlook.com" class="btn">
+                <i class="fas fa-envelope"></i> 发送邮件
+            </a>
+            <!-- 【替换】你的GitHub链接 -->
+            <a href="https://github.com/kayi-er" target="_blank" class="btn">
+                <i class="fab fa-github"></i> GitHub
+            </a>
+            <!-- 【替换】你的小红书链接 -->
+            <a href="https://www.xiaohongshu.com/user/profile/5cd20855000000001203775f" target="_blank" class="btn">
+                <i class="fab fa-xiaohongshu"></i> 小红书
+            </a>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer>
+        <!-- 【替换】版权信息：修改为你的名字和年份 -->
+        <p>&copy; 2026 kayiwen - 个人主页 | 基于GitHub Pages搭建</p>
+    </footer>
+</main>
+
+<!-- 学习笔记子菜单展开/折叠脚本 -->
+<script>
+    // 学习笔记子菜单交互
+    const notesTrigger = document.getElementById('notes-trigger');
+    const notesSubmenu = document.getElementById('notes-submenu');
+
+    notesTrigger.addEventListener('click', function(e) {
+        // 阻止默认锚点跳转（如需保留跳转可删除这行）
+        e.preventDefault();
+        // 切换子菜单展开/折叠
+        notesSubmenu.classList.toggle('submenu-open');
+        // 切换主菜单选中状态
+        this.classList.toggle('active');
+    });
+
+    // 可选：点击其他导航项关闭子菜单
+    const mainNavItems = document.querySelectorAll('.nav-main-item');
+    mainNavItems.forEach(item => {
+        if (item.id !== 'notes-trigger') {
+            item.addEventListener('click', function() {
+                notesSubmenu.classList.remove('submenu-open');
+                notesTrigger.classList.remove('active');
+            });
+        }
+    });
+</script>
+</body>
+</html>
