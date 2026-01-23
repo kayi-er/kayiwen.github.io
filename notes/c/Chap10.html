@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chap10 文件操作 - C语言学习笔记</title>
+  <style>
+    /* 全局样式重置 */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        scroll-behavior: smooth; /* 平滑滚动锚点 */
+    }
+
+    /* 页面背景和基础样式 */
+    body {
+        background-color: #f8f9fa;
+        color: #2c3e50;
+        line-height: 1.7;
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* 侧边栏样式 */
+    .sidebar {
+        width: 250px;
+        background-color: #2c3e50;
+        color: white;
+        padding: 2rem 1rem;
+        position: fixed;
+        height: 100vh;
+        box-shadow: 3px 0 8px rgba(0,0,0,0.15);
+        overflow-y: auto;
+        transition: all 0.3s ease;
+    }
+
+    /* 侧边栏头像/个人信息 */
+    .sidebar-profile {
+        text-align: center;
+        margin-bottom: 2.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(52, 152, 219, 0.3);
+    }
+
+    .sidebar-profile img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #3498db;
+        margin-bottom: 1rem;
+        box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
+    }
+
+    .sidebar-profile h2 {
+        font-size: 1.4rem;
+        margin-bottom: 0.5rem;
+        letter-spacing: 0.5px;
+    }
+
+    .sidebar-profile p {
+        color: #bdc3c7;
+        font-size: 0.9rem;
+    }
+
+    /* 侧边栏导航基础样式 */
+    .sidebar-nav {
+        list-style: none;
+    }
+
+    .sidebar-nav li {
+        margin-bottom: 0.8rem;
+    }
+
+    /* 主导航项 */
+    .nav-main-item {
+        color: white;
+        text-decoration: none;
+        display: block;
+        padding: 0.8rem 1rem;
+        border-radius: 6px;
+        transition: all 0.3s;
+        font-weight: 500;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .nav-main-item::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 4px;
+        height: 100%;
+        background-color: #3498db;
+        transform: scaleY(0);
+        transition: transform 0.3s;
+    }
+
+    .nav-main-item:hover,
+    .nav-main-item.active {
+        background-color: rgba(52, 152, 219, 0.2);
+        color: #3498db;
+    }
+
+    .nav-main-item:hover::before,
+    .nav-main-item.active::before {
+        transform: scaleY(1);
+    }
+
+    /* 学习笔记子菜单样式 */
+    .submenu {
+        list-style: none;
+        margin-left: 1rem;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease-in-out;
+    }
+
+    .submenu-open {
+        max-height: 500px;
+    }
+
+    .submenu li {
+        margin-bottom: 0.5rem;
+    }
+
+    .submenu a {
+        color: #bdc3c7;
+        text-decoration: none;
+        display: block;
+        padding: 0.6rem 1rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+    }
+
+    .submenu a:hover {
+        background-color: #34495e;
+        color: #3498db;
+        padding-left: 1.2rem;
+    }
+
+    /* 侧边栏底部联系方式 */
+    .sidebar-contact {
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(52, 152, 219, 0.3);
+    }
+
+    .sidebar-contact a {
+        color: #bdc3c7;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+    }
+
+    .sidebar-contact a:hover {
+        color: #3498db;
+        transform: translateX(5px);
+    }
+
+    .sidebar-contact i {
+        margin-right: 0.8rem;
+        font-size: 1.1rem;
+        width: 18px;
+        text-align: center;
+    }
+
+    /* 主内容区域 */
+    .main-content {
+        flex: 1;
+        margin-left: 250px;
+        padding: 2rem 3rem;
+        background-color: #f8f9fa;
+    }
+
+    /* 内容卡片样式 */
+    .content-card {
+        background: white;
+        padding: 2.5rem 3rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        margin-bottom: 2.5rem;
+        border-top: 4px solid #3498db;
+    }
+
+    /* 标题样式层级 */
+    .content-card h2 {
+        color: #2c3e50;
+        margin-bottom: 2rem;
+        border-bottom: 3px solid #3498db;
+        padding-bottom: 0.8rem;
+        font-size: 1.8rem;
+        letter-spacing: 1px;
+    }
+
+    .content-card h3 {
+        color: #2c3e50;
+        margin: 2rem 0 1.2rem;
+        font-size: 1.4rem;
+        position: relative;
+        padding-left: 1rem;
+    }
+
+    .content-card h3::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 50%;
+        width: 4px;
+        height: 1.2rem;
+        background-color: #3498db;
+        transform: translateY(-50%);
+    }
+
+    .content-card h4 {
+        color: #3498db;
+        margin: 1.5rem 0 0.8rem;
+        font-size: 1.2rem;
+    }
+
+    .content-card h5 {
+        color: #2980b9;
+        margin: 1.2rem 0 0.6rem;
+        font-size: 1.1rem;
+        padding-left: 0.8rem;
+        border-left: 3px solid #3498db;
+    }
+
+    .content-card h6 {
+        color: #1a5276;
+        margin: 1rem 0 0.5rem;
+        font-size: 1.05rem;
+        padding-left: 0.8rem;
+    }
+
+    /* 段落样式 */
+    .content-card p {
+        margin-bottom: 1.2rem;
+        line-height: 1.8;
+        text-align: justify;
+    }
+
+    /* 列表样式 */
+    .content-card ul, .content-card ol {
+        margin-left: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .content-card ul li, .content-card ol li {
+        margin-bottom: 0.6rem;
+        line-height: 1.8;
+    }
+
+    /* 代码块样式 */
+    .code-block {
+        background-color: #2d2d2d;
+        color: #f8f8f2;
+        padding: 1.2rem 1.5rem;
+        border-radius: 8px;
+        margin: 1.5rem 0;
+        overflow-x: auto;
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-size: 0.95rem;
+        line-height: 1.8;
+        white-space: pre;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    /* 代码块滚动条优化 */
+    .code-block::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .code-block::-webkit-scrollbar-thumb {
+        background-color: #3498db;
+        border-radius: 4px;
+    }
+
+    /* 表格样式美化 */
+    .content-card table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.5rem 0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .content-card th, .content-card td {
+        padding: 0.8rem 1rem;
+        text-align: left;
+        border: 1px solid #ecf0f1;
+    }
+
+    .content-card th {
+        background-color: #3498db;
+        color: white;
+        font-weight: 500;
+    }
+
+    .content-card tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+
+    .content-card tr:hover {
+        background-color: #e8f4fd;
+    }
+
+    /* 章节导航按钮容器 */
+    .chapter-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #ecf0f1;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    /* 章节跳转按钮通用样式 */
+    .chapter-btn {
+        display: inline-block;
+        padding: 0.8rem 1.8rem;
+        background-color: #3498db;
+        color: white !important;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+    }
+
+    /* 禁用状态 */
+    .chapter-btn.disabled {
+        background-color: #bdc3c7;
+        cursor: not-allowed;
+        box-shadow: none;
+        pointer-events: none;
+    }
+
+    /* 悬停效果 */
+    .chapter-btn:not(.disabled):hover {
+        background-color: #2980b9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    }
+
+    /* 目录按钮特殊样式 */
+    .chapter-btn.catalog-btn {
+        background-color: #2c3e50;
+    }
+
+    .chapter-btn.catalog-btn:hover {
+        background-color: #1a2530;
+    }
+
+    /* 页脚样式 */
+    footer {
+        text-align: center;
+        color: #7f8c8d;
+        padding: 2rem;
+        margin-top: 3rem;
+        font-size: 0.9rem;
+        border-top: 1px solid #ecf0f1;
+    }
+
+    /* 移动端响应式适配 */
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            height: auto;
+            position: relative;
+            padding: 1.5rem;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+
+        .main-content {
+            margin-left: 0;
+            padding: 1.5rem 1rem;
+        }
+
+        .sidebar-profile {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+        }
+
+        .sidebar-profile img {
+            width: 80px;
+            height: 80px;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-wrap: wrap;
+            overflow-x: auto;
+            gap: 0.8rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 0;
+        }
+
+        .submenu {
+            display: none;
+        }
+
+        .sidebar-contact {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+        }
+
+        .sidebar-contact a {
+            margin-bottom: 0;
+        }
+
+        .content-card {
+            padding: 1.5rem 1rem;
+            border-radius: 8px;
+        }
+
+        .content-card h2 {
+            font-size: 1.5rem;
+        }
+
+        .content-card h3 {
+            font-size: 1.3rem;
+        }
+
+        .content-card h4 {
+            font-size: 1.1rem;
+        }
+
+        .content-card h5 {
+            font-size: 1.05rem;
+        }
+
+        .content-card h6 {
+            font-size: 1rem;
+        }
+
+        .code-block {
+            font-size: 0.85rem;
+            padding: 1rem;
+            line-height: 1.7;
+        }
+
+        /* 移动端表格适配 */
+        .content-card table {
+            display: block;
+            overflow-x: auto;
+        }
+
+        .chapter-nav {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .chapter-btn {
+            width: 100%;
+            text-align: center;
+            padding: 0.7rem 1rem;
+        }
+    }
+  </style>
+  <!-- 引入图标库 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<!-- 侧边栏 -->
+<aside class="sidebar">
+  <div class="sidebar-profile">
+    <img src="../../images/avatar.jpg" alt="个人头像">
+    <h2>kayiwen</h2>
+    <p> BJTU-CS | 持续学习中 </p>
+  </div>
+
+  <!-- 侧边栏导航 -->
+  <ul class="sidebar-nav">
+    <li><a href="../../index.html#profile" class="nav-main-item">个人简介</a></li>
+    <li>
+      <a href="../../index.html#notes" class="nav-main-item active" id="notes-trigger">学习笔记</a>
+      <ul class="submenu submenu-open" id="notes-submenu">
+        <li><a href="../../c_lang.html" style="color: #3498db; background-color: #34495e;">C语言</a></li>
+        <li><a href="../../c_plus.html">C++</a></li>
+        <li><a href="../../python.html">Python</a></li>
+        <li><a href="../../html_css.html">HTML/CSS</a></li>
+      </ul>
+    </li>
+    <li><a href="../../index.html#inspiration" class="nav-main-item">灵感记录</a></li>
+    <li><a href="../../index.html#contact" class="nav-main-item">联系方式</a></li>
+  </ul>
+
+  <!-- 侧边栏联系方式 -->
+  <div class="sidebar-contact">
+    <a href="mailto:kayiwen@outlook.com">
+      <i class="fas fa-envelope"></i> kayiwen@outlook.com
+    </a>
+    <a href="https://github.com/kayi-er" target="_blank">
+      <i class="fab fa-github"></i> github.com/kayi-er
+    </a>
+    <a href="https://www.xiaohongshu.com/user/profile/5cd20855000000001203775f" target="_blank">
+      <i class="fab fa-xiaohongshu"></i> 小红书@kayiii
+    </a>
+    <a href="#" target="_blank">
+      <i class="fab fa-weixin"></i> 公众号：九无清酒
+    </a>
+  </div>
+</aside>
+
+<!-- 章节主体内容 -->
+<main class="main-content">
+  <section class="content-card">
+    <h2>Chap10 文件操作</h2>
+
+    <h3>Chap10 文件操作</h3>
+    <p>核心结论：本章聚焦C语言文件操作的核心技术，基于ANSI C标准的<strong>缓冲文件系统</strong>，通过文件指针（FILE*）实现文件的打开-操作-关闭完整流程，涵盖文件分类、顺序读写（字符/字符串/数据块/格式化）、随机读写（位置定位）及文件错误检测，是实现数据持久化存储与读取的关键知识点，适用于文本文件和二进制文件的各类操作场景。</p>
+
+    <h4>10.1 文件概述</h4>
+    <p>文件是存储在外部介质（如磁盘）上的数据集合，操作系统以文件为单位管理数据。C语言通过库函数操作文件，核心依赖缓冲文件系统和文件指针。</p>
+
+    <h5>10.1.1 文件分类</h5>
+    <p>按不同标准可分为三类，核心区别如下：</p>
+    <table>
+      <thead>
+      <tr><th>分类标准</th><th>具体类别</th><th>特点/示例</th></tr></thead>
+      <tbody>
+      <tr><td>按内容</td><td>程序文件（.c/.exe/.obj）</td><td>存储代码或可执行指令，如C源文件、可执行文件</td></tr>
+      <tr><td>&nbsp;</td><td>数据文件（.txt/.dat）</td><td>存储程序运行数据，如文本数据、二进制数据</td></tr>
+      <tr><td>按组织形式</td><td>顺序存取文件</td><td>只能按顺序读写，不可跳转（如磁带文件）</td></tr>
+      <tr><td>&nbsp;</td><td>随机存取文件</td><td>可通过指针定位任意位置读写（如磁盘文件）</td></tr>
+      <tr><td>按存储形式</td><td>ASCII码文件（文本文件）</td><td>字符以ASCII码存储，直观可读写，占空间大；如记事本文件</td></tr>
+      <tr><td>&nbsp;</td><td>二进制文件</td><td>按内存存储形式原样存储，占空间小、速度快，不可直接读写；如.exe/.obj文件</td></tr>
+      </tbody>
+    </table>
+    <ul>
+      <li><p>存储对比示例（十进制数12345）：</p>
+        <ul>
+          <li>ASCII文件：占5字节，存储为<code>'1'('00110001')、'2'('00110010')、'3'('00110011')、'4'('00110100')、'5'('00110101')</code></li>
+          <li>二进制文件：占4字节（int型），存储为内存中整数12345的二进制形式</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h5>10.1.2 C语言文件处理方法</h5>
+    <ul>
+      <li><p>缓冲文件系统（ANSI C标准唯一支持）：</p>
+        <ul>
+          <li>系统自动为每个文件开辟<strong>512字节缓冲区</strong>，数据先写入缓冲区，装满后再写入磁盘；读取时先从磁盘读入缓冲区，再逐字节读取到变量。</li>
+          <li>优势：减少磁盘I/O次数，提高效率，由操作系统自动管理缓冲区。</li>
+        </ul>
+      </li>
+      <li><p>非缓冲文件系统：需手动设置缓冲区，ANSI C不推荐，仅部分系统支持。</p>
+      </li>
+    </ul>
+
+    <h5>10.1.3 文件类型指针（FILE*）</h5>
+    <p>文件操作的核心是通过<strong>文件指针</strong>关联文件缓冲区，所有文件操作均通过指针实现。</p>
+    <ol>
+      <li><p>FILE结构体（系统定义）：
+        存储文件相关信息（文件号、缓冲区状态、读写位置等），定义如下：</p>
+        <div class="code-block">
+          typedef struct {
+          int _fd;         // 文件号
+          int _cleft;     // 缓冲区中剩余字符数
+          int _mode;     // 文件操作方式
+          char *_next;    // 文件当前读写位置
+          char *_buff;    // 文件缓冲区地址
+          } FILE;
+        </div>
+      </li>
+      <li><p>文件指针定义：</p>
+        <ul>
+          <li>格式：<code>FILE *指针变量名;</code></li>
+          <li>示例：<code>FILE *fp;</code>（fp为文件指针，指向FILE结构体变量，关联文件缓冲区）</li>
+          <li>多文件操作：每个文件对应独立缓冲区和文件指针，互不干扰。</li>
+        </ul>
+      </li>
+    </ol>
+
+    <hr />
+    <p>&nbsp;</p>
+
+    <h4>10.2 文件的打开和关闭</h4>
+    <p>文件操作必须遵循“<strong>先打开，后操作，最后关闭</strong>”的流程，核心函数为<code>fopen</code>（打开）和<code>fclose</code>（关闭）。</p>
+
+    <h5>10.2.1 文件打开（fopen函数）</h5>
+    <ul>
+      <li><p>功能：申请文件缓冲区，建立文件与指针的关联，返回文件指针。</p>
+      </li>
+      <li><p>格式：<code>FILE *fopen(const char *文件名, const char *使用方式);</code></p>
+        <ul>
+          <li>文件名：含路径（如<code>"d:\\file\\test.txt"</code>，双反斜杠转义），默认路径与程序同级。</li>
+          <li>使用方式：指定文件操作类型（读/写/追加、文本/二进制），核心类型如下：</li>
+        </ul>
+      </li>
+    </ul>
+    <table>
+      <thead>
+      <tr><th>使用方式</th><th>含义</th><th>注意事项</th></tr></thead>
+      <tbody>
+      <tr><td>"r"</td><td>只读打开文本文件</td><td>文件不存在则打开失败</td></tr>
+      <tr><td>"w"</td><td>只写创建文本文件</td><td>文件存在则覆盖原有内容，不存在则创建</td></tr>
+      <tr><td>"a"</td><td>追加打开文本文件</td><td>从文件末尾写入，不存在则创建</td></tr>
+      <tr><td>"rb"</td><td>只读打开二进制文件</td><td>-</td></tr>
+      <tr><td>"wb"</td><td>只写创建二进制文件</td><td>-</td></tr>
+      <tr><td>"ab"</td><td>追加打开二进制文件</td><td>-</td></tr>
+      <tr><td>"r+"</td><td>读写打开文本文件</td><td>文件必须存在</td></tr>
+      <tr><td>"w+"</td><td>读写创建文本文件</td><td>覆盖原有内容或创建新文件</td></tr>
+      <tr><td>"a+"</td><td>读写打开文本文件</td><td>从末尾写入，可读取全文</td></tr>
+      <tr><td>"rb+"</td><td>读写打开二进制文件</td><td>-</td></tr>
+      <tr><td>"wb+"</td><td>读写创建二进制文件</td><td>-</td></tr>
+      <tr><td>"ab+"</td><td>读写打开二进制文件</td><td>-</td></tr>
+      </tbody>
+    </table>
+    <ul>
+      <li><p>返回值：成功返回文件指针（非NULL），失败返回<code>NULL</code>（需判断打开状态）。</p>
+      </li>
+      <li><p>示例：打开文本文件（判断是否成功）</p>
+        <div class="code-block">
+          #include <stdio.h>
+          #include <stdlib.h>
+          void main() {
+          FILE *fp;
+          // 打开当前目录下的f1.txt，只读方式
+          if ((fp = fopen("f1.txt", "r")) == NULL) {
+          printf("无法打开文件！\n");
+          exit(1); // 终止程序，返回1表示出错
+          }
+          // 文件操作...
+          fclose(fp); // 关闭文件
+          }
+        </div>
+      </li>
+    </ul>
+
+    <h5>10.2.2 文件关闭（fclose函数）</h5>
+    <ul>
+      <li><p>功能：断开指针与文件的关联，释放缓冲区数据到磁盘，回收缓冲区内存。</p>
+      </li>
+      <li><p>格式：<code>int fclose(FILE *fp);</code></p>
+      </li>
+      <li><p>返回值：成功返回<code>0</code>，失败返回<code>EOF</code>（-1）。</p>
+      </li>
+      <li><p>注意事项：</p>
+        <ul>
+          <li>必须关闭文件，否则缓冲区数据可能丢失。</li>
+          <li>关闭后指针变为野指针，不可再操作。</li>
+        </ul>
+      </li>
+      <li><p>示例：关闭文件</p>
+        <div class="code-block">
+          FILE *fp = fopen("test.txt", "w");
+          // 写入操作...
+          if (fclose(fp) != 0) {
+          printf("文件关闭失败！\n");
+          }
+        </div>
+      </li>
+    </ul>
+
+    <h5>10.2.3 标准文件（系统自动打开）</h5>
+    <p>程序运行时，系统自动打开3个标准文件，无需手动fopen：</p>
+    <table>
+      <thead>
+      <tr><th>标准文件</th><th>文件指针</th><th>对应设备</th><th>用途</th></tr></thead>
+      <tbody>
+      <tr><td>标准输入</td><td>stdin</td><td>键盘</td><td>输入数据</td></tr>
+      <tr><td>标准输出</td><td>stdout</td><td>显示器</td><td>输出数据</td></tr>
+      <tr><td>标准出错输出</td><td>stderr</td><td>显示器</td><td>输出错误信息</td></tr>
+      </tbody>
+    </table>
+    <ul>
+      <li><p>示例：使用stdin读取字符串</p>
+        <div class="code-block">
+          #include <stdio.h>
+          void main() {
+          char str[100];
+          fgets(str, 100, stdin); // 从键盘读取字符串
+          printf("%s", str);
+          }
+        </div>
+      </li>
+    </ul>
+
+    <hr />
+    <p>&nbsp;</p>
+
+    <h4>10.3 文件的操作</h4>
+    <p>文件操作分为<strong>顺序读写</strong>（按指针顺序移动）和<strong>随机读写</strong>（手动定位指针），核心是通过各类读写函数操作数据。</p>
+
+    <h5>10.3.1 顺序读写</h5>
+    <p>按文件内部位置指针的自然顺序读写，指针自动向后移动，核心函数如下：</p>
+
+    <h6>1. 字符读写（fgetc / fputc）</h6>
+    <ul>
+      <li><p>读字符：<code>int fgetc(FILE *fp);</code></p>
+        <ul>
+          <li><p>功能：从fp指向的文件读取一个字符，返回字符ASCII码（unsigned char转换为int）。</p>
+          </li>
+          <li><p>结束标志：读到文件末尾或出错返回<code>EOF</code>（-1）。</p>
+          </li>
+          <li><p>示例：读文本文件并输出到屏幕</p>
+            <div class="code-block">
+              #include <stdio.h>
+              #include <stdlib.h>
+              void main() {
+              FILE *fp;
+              char ch;
+              if ((fp = fopen("f1.txt", "r")) == NULL) {
+              printf("无法打开文件！\n");
+              exit(1);
+              }
+              // 循环读取字符，直到EOF
+              while ((ch = fgetc(fp)) != EOF) {
+              putchar(ch); // 输出到屏幕
+              }
+              printf("\n");
+              fclose(fp);
+              }
+            </div>
+          </li>
+        </ul>
+      </li>
+      <li><p>写字符：<code>int fputc(int ch, FILE *fp);</code></p>
+        <ul>
+          <li><p>功能：将字符ch（int型参数，实际取低8位）写入fp指向的文件。</p>
+          </li>
+          <li><p>返回值：成功返回写入的字符，失败返回<code>EOF</code>。</p>
+          </li>
+          <li><p>示例：从键盘输入字符，写入文件c2.txt</p>
+            <div class="code-block">
+              #include <stdio.h>
+              #include <stdlib.h>
+              void main() {
+              FILE *fp;
+              char ch;
+              if ((fp = fopen("c2.txt", "w+")) == NULL) {
+              printf("无法创建文件！\n");
+              exit(1);
+              }
+              printf("输入字符串（回车结束）：\n");
+              ch = getchar();
+              while (ch != '\n') {
+              fputc(ch, fp); // 写入文件
+              ch = getchar();
+              }
+              fclose(fp);
+              }
+            </div>
+          </li>
+        </ul>
+      </li>
+    </ul>
+
+    <h6>2. 字符串读写（fgets / fputs）</h6>
+    <ul>
+      <li><p>读字符串：<code>char *fgets(char *buff, int n, FILE *fp);</code></p>
+        <ul>
+          <li><p>功能：从fp读取<code>n-1</code>个字符到buff数组，遇换行或EOF提前结束，自动添加<code>'\0'</code>。</p>
+          </li>
+          <li><p>返回值：成功返回buff首地址，失败或EOF返回<code>NULL</code>。</p>
+          </li>
+          <li><p>示例：读文件中10个字符的字符串并输出</p>
+            <div class="code-block">
+              #include <stdio.h>
+              #include <stdlib.h>
+              void main() {
+              FILE *fp;
+              char str[11]; // 存10个有效字符+'\0'
+              if ((fp = fopen("c3.txt", "r")) == NULL) {
+              printf("无法打开文件！\n");
+              exit(1);
+              }
+              fgets(str, 11, fp); // 最多读10个字符
+              puts(str); // 输出字符串
+              fclose(fp);
+              }
+            </div>
+          </li>
+        </ul>
+      </li>
+      <li><p>写字符串：<code>int fputs(const char *str, FILE *fp);</code></p>
+        <ul>
+          <li><p>功能：将str指向的字符串（不含<code>'\0'</code>）写入fp指向的文件。</p>
+          </li>
+          <li><p>返回值：成功返回<code>0</code>，失败返回<code>EOF</code>。</p>
+          </li>
+          <li><p>示例：从键盘输入字符串，写入文件</p>
+            <div class="code-block">
+              #include <stdio.h>
+              #include <stdlib.h>
+              void main() {
+              FILE *fp;
+              char st[20];
+              if ((fp = fopen("c3.txt", "w+")) == NULL) {
+              printf("无法创建文件！\n");
+              exit(1);
+              }
+              printf("输入字符串：\n");
+              gets(st); // 读键盘输入
+              fputs(st, fp); // 写入文件
+              fclose(fp);
+              }
+            </div>
+          </li>
+        </ul>
+      </li>
+    </ul>
+
+    <h6>3. 数据块读写（fread / fwrite）</h6>
+    <p>多用于<strong>二进制文件</strong>，按数据块批量读写，效率高。</p>
+    <ul>
+      <li><p>读数据块：<code>size_t fread(void *buffer, size_t size, size_t count, FILE *fp);</code></p>
+      </li>
+      <li><p>写数据块：<code>size_t fwrite(const void *buffer, size_t size, size_t count, FILE *fp);</code></p>
+        <ul>
+          <li><p>参数：</p>
+            <ul>
+              <li>buffer：数据存储地址（读时存数据，写时取数据）。</li>
+              <li>size：单个数据块的字节数（如<code>sizeof(int)</code>）。</li>
+              <li>count：数据块个数。</li>
+            </ul>
+          </li>
+          <li><p>返回值：成功读写的数据块个数（等于count为正常）。</p>
+          </li>
+        </ul>
+      </li>
+      <li><p>示例1：将100个整数写入二进制文件，再读出</p>
+        <div class="code-block">
+          #include <stdio.h>
+          #include <stdlib.h>
+          void main() {
+          int Iarr[100], myarr[100], i;
+          FILE *fp;
+          // 初始化数组
+          for (i = 0; i < 100; i++) Iarr[i] = i;
+          // 写入二进制文件
+          if ((fp = fopen("test.dat", "wb")) == NULL) {
+          printf("无法创建文件！\n");
+          exit(1);
+          }
+          fwrite(Iarr, sizeof(int), 100, fp);
+          fclose(fp);
+          // 读出文件
+          if ((fp = fopen("test.dat", "rb")) == NULL) {
+          printf("无法打开文件！\n");
+          exit(2);
+          }
+          if (fread(myarr, sizeof(int), 100, fp) != 100) {
+          printf("数据读取不完整！\n");
+          exit(3);
+          }
+          fclose(fp);
+          // 输出结果
+          for (i = 0; i < 100; i++) printf("%d ", myarr[i]);
+          }
+        </div>
+      </li>
+      <li><p>示例2：结构体数组的二进制读写（商品信息）</p>
+        <div class="code-block">
+          #include <stdio.h>
+          #include <stdlib.h>
+          // 商品结构体
+          typedef struct GoodInfo {
+          int nID;          // 商品ID
+          char szName[20];  // 商品名称
+          double dPrice;    // 商品价格
+          } GOODINFO;
+          // 商品列表结构体
+          typedef struct GoodList {
+          GOODINFO Goods[100]; // 最多100种商品
+          int nNumber;         // 实际商品数
+          } GOODLIST;
+
+          // 保存商品列表到文件
+          int SaveGoodListToFile(GOODLIST *gList, char *szFileName) {
+          FILE *fp;
+          if (gList->nNumber == 0) {
+          printf("商品列表为空！\n");
+          return -1;
+          }
+          fp = fopen(szFileName, "wb+");
+          if (fp == NULL) {
+          printf("无法创建文件！\n");
+          return -2;
+          }
+          // 先写商品个数，再写商品数据
+          fwrite(&gList->nNumber, sizeof(int), 1, fp);
+          fwrite(gList->Goods, sizeof(GOODINFO), gList->nNumber, fp);
+          fclose(fp);
+          return 0;
+          }
+
+          // 从文件读取商品列表
+          int ReadGoodListFromFile(GOODLIST *gList, char *szFileName) {
+          FILE *fp = fopen(szFileName, "rb");
+          if (fp == NULL) return -1;
+          int n;
+          // 读商品个数
+          if (fread(&n, sizeof(int), 1, fp) < 1) {
+          printf("文件无数据！\n");
+          fclose(fp);
+          return -2;
+          }
+          gList->nNumber = n;
+          // 读商品数据
+          int nCount = fread(gList->Goods, sizeof(GOODINFO), n, fp);
+          if (nCount < n) {
+          printf("数据不完整！\n");
+          fclose(fp);
+          return -3;
+          }
+          fclose(fp);
+          return 0;
+          }
+        </div>
+      </li>
+    </ul>
+
+    <h6>4. 格式化读写（fscanf / fprintf）</h6>
+    <p>按指定格式读写文件，类似<code>scanf</code>/<code>printf</code>，但操作对象是文件。</p>
+    <ul>
+      <li><p>读格式：<code>int fscanf(FILE *fp, const char *format, ...);</code></p>
+      </li>
+      <li><p>写格式：<code>int fprintf(FILE *fp, const char *format, ...);</code></p>
+      </li>
+      <li><p>示例1：写入整数和字符串到文件</p>
+        <div class="code-block">
+          #include <stdio.h>
+          #include <stdlib.h>
+          void main() {
+          FILE *fp;
+          int i = 617;
+          char *s = "That's good news";
+          if ((fp = fopen("test.txt", "w")) == NULL) {
+          printf("无法创建文件！\n");
+          exit(1);
+          }
+          fprintf(fp, "%d%s", i, s); // 格式化写入
+          fclose(fp);
+          }
+        </div>
+      </li>
+      <li><p>示例2：读写整数、实数、字符</p>
+        <div class="code-block">
+          #include <stdio.h>
+          #include <stdlib.h>
+          void main() {
+          int a, a1;
+          float b, b1;
+          char c, c1;
+          FILE *fp;
+          // 读写模式打开文件
+          if ((fp = fopen("new.txt", "w+")) == NULL) {
+          printf("无法创建文件！\n");
+          exit(1);
+          }
+          // 从键盘输入并写入文件
+          printf("请输入整数、实数、字符（用逗号分隔）：\n");
+          scanf("%d,%f,%c", &a, &b, &c);
+          fprintf(fp, "%d,%f,%c", a, b, c);
+          fclose(fp);
+          // 从文件读出并输出
+          fp = fopen("new.txt", "r");
+          fscanf(fp, "%d,%f,%c", &a1, &b1, &c1);
+          printf("原输入：%d,%f,%c\n", a, b, c);
+          printf("文件读出：%d,%f,%c\n", a1, b1, c1);
+          fclose(fp);
+          }
+        </div>
+      </li>
+      <li><p>示例3：学生成绩的格式化读写</p>
+        <div class="code-block">
+          #include <stdio.h>
+          #include <stdlib.h>
+          #include <malloc.h>
+          // 学生成绩结构体
+          typedef struct StudentScores {
+          char szID[9];    // 学号
+          char szName[20]; // 姓名
+          double dScores[3]; // 三门课成绩
+          } STUDENTSCORES;
+          // 班级成绩结构体
+          typedef struct ClassScore {
+          STUDENTSCORES *pStudents; // 学生数组指针
+          int nCount;              // 学生个数
+          } CLASSSCORE;
+
+          // 从文件读入班级成绩
+          void ReadScoresFromFile(CLASSSCORE *pClass, char *szFileName) {
+          FILE *fp = fopen(szFileName, "r");
+          if (fp == NULL) return;
+          // 读学生个数
+          fscanf(fp, "%d", &pClass->nCount);
+          // 动态分配学生数组内存
+          pClass->pStudents = (STUDENTSCORES*)malloc(sizeof(STUDENTSCORES) * pClass->nCount);
+          // 逐行读学生数据
+          for (int i = 0; i < pClass->nCount; i++) {
+          fscanf(fp, "%s %s %lf %lf %lf",
+          pClass->pStudents[i].szID,
+          pClass->pStudents[i].szName,
+          &pClass->pStudents[i].dScores[0],
+          &pClass->pStudents[i].dScores[1],
+          &pClass->pStudents[i].dScores[2]);
+          }
+          fclose(fp);
+          }
+
+          // 将班级成绩写入文件
+          void SaveScoresToFile(CLASSSCORE *pClass, char *szFileName) {
+          FILE *fp = fopen(szFileName, "w");
+          if (fp == NULL) return;
+          // 写学生个数
+          fprintf(fp, "%d\n", pClass->nCount);
+          // 逐行写学生数据
+          for (int i = 0; i < pClass->nCount; i++) {
+          fprintf(fp, "%s %s %6.2lf %6.2lf %6.2lf\n",
+          pClass->pStudents[i].szID,
+          pClass->pStudents[i].szName,
+          pClass->pStudents[i].dScores[0],
+          pClass->pStudents[i].dScores[1],
+          pClass->pStudents[i].dScores[2]);
+          }
+          fclose(fp);
+          }
+        </div>
+      </li>
+    </ul>
+
+    <h5>10.3.2 随机读写</h5>
+    <p>通过定位文件内部的<strong>位置指针</strong>，实现任意位置的读写，核心是文件定位函数。</p>
+
+    <h6>1. 位置指针概述</h6>
+    <ul>
+      <li><p>文件内部有一个隐含的位置指针，指向当前读写位置：</p>
+        <ul>
+          <li>打开文件时，指针指向文件开头（“r”/“w”模式）或文件末尾（“a”模式）。</li>
+          <li>顺序读写时，指针自动向后移动（移动字节数=读写数据的字节数）。</li>
+          <li>随机读写时，通过函数手动调整指针位置。</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h6>2. 文件定位函数</h6>
+    <ul>
+      <li><p>指针复位：<code>void rewind(FILE *fp);</code></p>
+        <ul>
+          <li>功能：将fp的位置指针移到文件开头。</li>
+        </ul>
+      </li>
+      <li><p>指针偏移：<code>int fseek(FILE *fp, long offset, int base);</code></p>
+        <ul>
+          <li><p>功能：将指针从base基准位置偏移offset字节。</p>
+          </li>
+          <li><p>参数：</p>
+            <ul>
+              <li><p>offset：偏移量（正数向后移，负数向前移）。</p>
+              </li>
+              <li><p>base：基准位置（宏定义）：</p>
+                <table>
+                  <thead>
+                  <tr><th>基准位置</th><th>宏名</th><th>数值</th></tr></thead>
+                  <tbody>
+                  <tr><td>文件开头</td><td>SEEK_SET</td><td>0</td></tr>
+                  <tr><td>当前指针位置</td><td>SEEK_CUR</td><td>1</td></tr>
+                  <tr><td>文件末尾</td><td>SEEK_END</td><td>2</td></tr>
+                  </tbody>
+                </table>
+              </li>
+            </ul>
+          </li>
+          <li><p>返回值：成功返回<code>0</code>，失败返回<code>-1</code>。</p>
+          </li>
+        </ul>
+      </li>
+      <li><p>示例：读取文件中第二个学生的数据</p>
+        <div class="code-block">
+          #include <stdio.h>
+          #include <stdlib.h>
+          // 学生结构体
+          struct stu {
+          char name[10];
+          int num;
+          int age;
+          char addr[15];
+          } stu1, *qq = &stu1;
+
+          void main() {
+          FILE *fp;
+          // 打开二进制文件
+          if ((fp = fopen("stu.dat", "rb")) == NULL) {
+          printf("无法打开文件！\n");
+          exit(1);
+          }
+          rewind(fp); // 指针移到文件开头
+          // 指针偏移一个学生结构体的字节数（指向第二个学生）
+          fseek(fp, sizeof(struct stu), SEEK_SET);
+          // 读取第二个学生数据
+          fread(qq, sizeof(struct stu), 1, fp);
+          // 输出结果
+          printf("姓名：%s 学号：%d 年龄：%d 地址：%s\n",
+          qq->name, qq->num, qq->age, qq->addr);
+          fclose(fp);
+          }
+        </div>
+      </li>
+    </ul>
+
+    <hr />
+    <p>&nbsp;</p>
+
+    <h4>10.4 文件检测</h4>
+    <p>用于判断文件操作是否出错、是否到达文件末尾，核心函数为<code>ferror</code>、<code>clearerr</code>、<code>feof</code>。</p>
+
+    <h5>10.4.1 错误检测（ferror函数）</h5>
+    <ul>
+      <li><p>格式：<code>int ferror(FILE *fp);</code></p>
+      </li>
+      <li><p>功能：检测fp指向的文件操作是否出错。</p>
+      </li>
+      <li><p>返回值：<code>0</code>（未出错），非0（出错）。</p>
+      </li>
+      <li><p>示例：检测文件读写错误</p>
+        <div class="code-block">
+          #include <stdio.h>
+          void main() {
+          FILE *fp;
+          fp = fopen("DUMMY.FIL", "w"); // 只写模式打开
+          fgetc(fp); // 尝试读文件（非法操作）
+          if (ferror(fp)) { // 检测错误
+          printf("文件操作出错！\n");
+          clearerr(fp); // 清除错误标志
+          }
+          fclose(fp);
+          }
+        </div>
+      </li>
+    </ul>
+
+    <h5>10.4.2 清除错误标志（clearerr函数）</h5>
+    <ul>
+      <li>格式：<code>void clearerr(FILE *fp);</code></li>
+      <li>功能：将fp的“错误标志”和“文件结束标志”置为<code>0</code>。</li>
+      <li>注意：<code>ferror</code>检测到错误后，标志会保持，需手动清除。</li>
+    </ul>
+
+    <h5>10.4.3 文件结束检测（feof函数）</h5>
+    <ul>
+      <li><p>格式：<code>int feof(FILE *fp);</code></p>
+      </li>
+      <li><p>功能：检测fp指向的文件是否到达末尾。</p>
+      </li>
+      <li><p>返回值：<code>0</code>（未结束），非0（已结束）。</p>
+      </li>
+      <li><p>注意：<code>fgetc</code>返回<code>EOF</code>可能是出错或文件结束，需用<code>feof</code>区分。</p>
+      </li>
+      <li><p>示例：区分文件结束和出错</p>
+        <div class="code-block">
+          #include <stdio.h>
+          void main() {
+          FILE *fp;
+          char ch;
+          fp = fopen("test.txt", "r");
+          while (1) {
+          ch = fgetc(fp);
+          if (feof(fp)) { // 检测是否文件结束
+          printf("文件读取完毕！\n");
+          break;
+          }
+          if (ferror(fp)) { // 检测是否出错
+          printf("读取错误！\n");
+          break;
+          }
+          putchar(ch);
+          }
+          fclose(fp);
+          }
+        </div>
+      </li>
+    </ul>
+
+    <hr />
+    <p>&nbsp;</p>
+
+    <h4>10.5 总结与应用实例</h4>
+
+    <h5>10.5.1 常见错误</h5>
+    <ol>
+      <li>打开/关闭方式不匹配（如“r”模式写文件）。</li>
+      <li>混淆文件指针（FILE*）和位置指针（内部隐含指针）。</li>
+      <li>随机读写时指针定位错误。</li>
+      <li>忘记关闭文件，导致数据丢失。</li>
+    </ol>
+
+    <h5>10.5.2 常用文件函数汇总</h5>
+    <table>
+      <thead>
+      <tr><th>分类</th><th>函数名</th><th>功能</th></tr></thead>
+      <tbody>
+      <tr><td>打开关闭</td><td>fopen</td><td>打开文件</td></tr>
+      <tr><td>&nbsp;</td><td>fclose</td><td>关闭文件</td></tr>
+      <tr><td>定位</td><td>rewind</td><td>指针移到文件开头</td></tr>
+      <tr><td>&nbsp;</td><td>fseek</td><td>指针偏移指定字节</td></tr>
+      <tr><td>字符读写</td><td>fgetc</td><td>读一个字符</td></tr>
+      <tr><td>&nbsp;</td><td>fputc</td><td>写一个字符</td></tr>
+      <tr><td>字符串读写</td><td>fgets</td><td>读一个字符串</td></tr>
+      <tr><td>&nbsp;</td><td>fputs</td><td>写一个字符串</td></tr>
+      <tr><td>数据块读写</td><td>fread</td><td>读数据块（二进制）</td></tr>
+      <tr><td>&nbsp;</td><td>fwrite</td><td>写数据块（二进制）</td></tr>
+      <tr><td>格式化读写</td><td>fscanf</td><td>格式化读文件</td></tr>
+      <tr><td>&nbsp;</td><td>fprintf</td><td>格式化写文件</td></tr>
+      <tr><td>状态检测</td><td>ferror</td><td>检测操作错误</td></tr>
+      <tr><td>&nbsp;</td><td>clearerr</td><td>清除错误标志</td></tr>
+      <tr><td>&nbsp;</td><td>feof</td><td>检测文件结束</td></tr>
+      </tbody>
+    </table>
+
+    <h5>10.5.3 应用实例：文件复制并转换大小写</h5>
+    <ul>
+      <li><p>功能：将file1.txt的内容复制到file2.txt，同时将小写字母转为大写。</p>
+        <div class="code-block">
+          #include <stdio.h>
+          #include <stdlib.h>
+          void main() {
+          FILE *fp1, *fp2;
+          char ch;
+          // 打开源文件（读）和目标文件（写）
+          if ((fp1 = fopen("file1.txt", "r")) == NULL) {
+          printf("无法打开源文件！\n");
+          exit(1);
+          }
+          if ((fp2 = fopen("file2.txt", "w")) == NULL) {
+          printf("无法创建目标文件！\n");
+          fclose(fp1);
+          exit(2);
+          }
+          // 循环读取并转换
+          ch = fgetc(fp1);
+          while (ch != EOF) {
+          if (ch >= 'a' && ch <= 'z') {
+          ch -= 32; // 小写转大写（ASCII码差32）
+          }
+          fputc(ch, fp2); // 写入目标文件
+          ch = fgetc(fp1);
+          }
+          // 关闭文件
+          fclose(fp1);
+          fclose(fp2);
+          printf("复制完成！\n");
+          }
+        </div>
+      </li>
+    </ul>
+    <p>&nbsp;</p>
+
+    <!-- 章节导航按钮 -->
+    <div class="chapter-nav">
+      <a href="Chap9.html" class="chapter-btn">上一章</a>
+      <a href="../../c_lang.html" class="chapter-btn catalog-btn">返回目录</a>
+      <a href="Chap11.html" class="chapter-btn">下一章</a>
+    </div>
+  </section>
+
+  <!-- 页脚 -->
+  <footer>
+    © 2026 kayiwen - C语言学习笔记 | 持续更新中
+  </footer>
+</main>
+
+<!-- 子菜单展开/折叠脚本 -->
+<script>
+  const notesTrigger = document.getElementById('notes-trigger');
+  const notesSubmenu = document.getElementById('notes-submenu');
+
+  notesTrigger.addEventListener('click', (e) => {
+      e.preventDefault();
+      notesSubmenu.classList.toggle('submenu-open');
+  });
+</script>
+</body>
+</html>

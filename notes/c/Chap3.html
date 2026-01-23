@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chap3 程序控制结构 - C语言学习笔记</title>
+  <style>
+    /* 全局样式重置 */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        scroll-behavior: smooth; /* 平滑滚动锚点 */
+    }
+
+    /* 页面背景和基础样式 */
+    body {
+        background-color: #f8f9fa;
+        color: #2c3e50;
+        line-height: 1.7;
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* 侧边栏样式 */
+    .sidebar {
+        width: 250px;
+        background-color: #2c3e50;
+        color: white;
+        padding: 2rem 1rem;
+        position: fixed;
+        height: 100vh;
+        box-shadow: 3px 0 8px rgba(0,0,0,0.15);
+        overflow-y: auto;
+        transition: all 0.3s ease;
+    }
+
+    /* 侧边栏头像/个人信息 */
+    .sidebar-profile {
+        text-align: center;
+        margin-bottom: 2.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(52, 152, 219, 0.3);
+    }
+
+    .sidebar-profile img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #3498db;
+        margin-bottom: 1rem;
+        box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
+    }
+
+    .sidebar-profile h2 {
+        font-size: 1.4rem;
+        margin-bottom: 0.5rem;
+        letter-spacing: 0.5px;
+    }
+
+    .sidebar-profile p {
+        color: #bdc3c7;
+        font-size: 0.9rem;
+    }
+
+    /* 侧边栏导航基础样式 */
+    .sidebar-nav {
+        list-style: none;
+    }
+
+    .sidebar-nav li {
+        margin-bottom: 0.8rem;
+    }
+
+    /* 主导航项 */
+    .nav-main-item {
+        color: white;
+        text-decoration: none;
+        display: block;
+        padding: 0.8rem 1rem;
+        border-radius: 6px;
+        transition: all 0.3s;
+        font-weight: 500;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .nav-main-item::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 4px;
+        height: 100%;
+        background-color: #3498db;
+        transform: scaleY(0);
+        transition: transform 0.3s;
+    }
+
+    .nav-main-item:hover,
+    .nav-main-item.active {
+        background-color: rgba(52, 152, 219, 0.2);
+        color: #3498db;
+    }
+
+    .nav-main-item:hover::before,
+    .nav-main-item.active::before {
+        transform: scaleY(1);
+    }
+
+    /* 学习笔记子菜单样式 */
+    .submenu {
+        list-style: none;
+        margin-left: 1rem;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease-in-out;
+    }
+
+    .submenu-open {
+        max-height: 500px;
+    }
+
+    .submenu li {
+        margin-bottom: 0.5rem;
+    }
+
+    .submenu a {
+        color: #bdc3c7;
+        text-decoration: none;
+        display: block;
+        padding: 0.6rem 1rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+    }
+
+    .submenu a:hover {
+        background-color: #34495e;
+        color: #3498db;
+        padding-left: 1.2rem;
+    }
+
+    /* 侧边栏底部联系方式 */
+    .sidebar-contact {
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(52, 152, 219, 0.3);
+    }
+
+    .sidebar-contact a {
+        color: #bdc3c7;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+    }
+
+    .sidebar-contact a:hover {
+        color: #3498db;
+        transform: translateX(5px);
+    }
+
+    .sidebar-contact i {
+        margin-right: 0.8rem;
+        font-size: 1.1rem;
+        width: 18px;
+        text-align: center;
+    }
+
+    /* 主内容区域 */
+    .main-content {
+        flex: 1;
+        margin-left: 250px;
+        padding: 2rem 3rem;
+        background-color: #f8f9fa;
+    }
+
+    /* 内容卡片样式 */
+    .content-card {
+        background: white;
+        padding: 2.5rem 3rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        margin-bottom: 2.5rem;
+        border-top: 4px solid #3498db;
+    }
+
+    /* 标题样式层级 */
+    .content-card h2 {
+        color: #2c3e50;
+        margin-bottom: 2rem;
+        border-bottom: 3px solid #3498db;
+        padding-bottom: 0.8rem;
+        font-size: 1.8rem;
+        letter-spacing: 1px;
+    }
+
+    .content-card h3 {
+        color: #2c3e50;
+        margin: 2rem 0 1.2rem;
+        font-size: 1.4rem;
+        position: relative;
+        padding-left: 1rem;
+    }
+
+    .content-card h3::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 50%;
+        width: 4px;
+        height: 1.2rem;
+        background-color: #3498db;
+        transform: translateY(-50%);
+    }
+
+    .content-card h4 {
+        color: #3498db;
+        margin: 1.5rem 0 0.8rem;
+        font-size: 1.2rem;
+    }
+
+    .content-card h5 {
+        color: #2980b9;
+        margin: 1.2rem 0 0.6rem;
+        font-size: 1.1rem;
+        padding-left: 0.8rem;
+        border-left: 3px solid #3498db;
+    }
+
+    /* 段落样式 */
+    .content-card p {
+        margin-bottom: 1.2rem;
+        line-height: 1.8;
+        text-align: justify;
+    }
+
+    /* 列表样式 */
+    .content-card ul, .content-card ol {
+        margin-left: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .content-card ul li, .content-card ol li {
+        margin-bottom: 0.6rem;
+        line-height: 1.8;
+    }
+
+    /* 代码块样式 */
+    .code-block {
+        background-color: #2d2d2d;
+        color: #f8f8f2;
+        padding: 1.2rem 1.5rem;
+        border-radius: 8px;
+        margin: 1.5rem 0;
+        overflow-x: auto;
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-size: 0.95rem;
+        line-height: 1.8;
+        white-space: pre;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    /* 代码块滚动条优化 */
+    .code-block::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .code-block::-webkit-scrollbar-thumb {
+        background-color: #3498db;
+        border-radius: 4px;
+    }
+
+    /* 表格样式美化 */
+    .content-card table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.5rem 0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .content-card th, .content-card td {
+        padding: 0.8rem 1rem;
+        text-align: left;
+        border: 1px solid #ecf0f1;
+    }
+
+    .content-card th {
+        background-color: #3498db;
+        color: white;
+        font-weight: 500;
+    }
+
+    .content-card tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+
+    .content-card tr:hover {
+        background-color: #e8f4fd;
+    }
+
+    /* 章节导航按钮容器 */
+    .chapter-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #ecf0f1;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    /* 章节跳转按钮通用样式 */
+    .chapter-btn {
+        display: inline-block;
+        padding: 0.8rem 1.8rem;
+        background-color: #3498db;
+        color: white !important;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+    }
+
+    /* 禁用状态 */
+    .chapter-btn.disabled {
+        background-color: #bdc3c7;
+        cursor: not-allowed;
+        box-shadow: none;
+        pointer-events: none;
+    }
+
+    /* 悬停效果 */
+    .chapter-btn:not(.disabled):hover {
+        background-color: #2980b9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    }
+
+    /* 目录按钮特殊样式 */
+    .chapter-btn.catalog-btn {
+        background-color: #2c3e50;
+    }
+
+    .chapter-btn.catalog-btn:hover {
+        background-color: #1a2530;
+    }
+
+    /* 页脚样式 */
+    footer {
+        text-align: center;
+        color: #7f8c8d;
+        padding: 2rem;
+        margin-top: 3rem;
+        font-size: 0.9rem;
+        border-top: 1px solid #ecf0f1;
+    }
+
+    /* 移动端响应式适配 */
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            height: auto;
+            position: relative;
+            padding: 1.5rem;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+
+        .main-content {
+            margin-left: 0;
+            padding: 1.5rem 1rem;
+        }
+
+        .sidebar-profile {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+        }
+
+        .sidebar-profile img {
+            width: 80px;
+            height: 80px;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-wrap: wrap;
+            overflow-x: auto;
+            gap: 0.8rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 0;
+        }
+
+        .submenu {
+            display: none;
+        }
+
+        .sidebar-contact {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+        }
+
+        .sidebar-contact a {
+            margin-bottom: 0;
+        }
+
+        .content-card {
+            padding: 1.5rem 1rem;
+            border-radius: 8px;
+        }
+
+        .content-card h2 {
+            font-size: 1.5rem;
+        }
+
+        .content-card h3 {
+            font-size: 1.3rem;
+        }
+
+        .content-card h4 {
+            font-size: 1.1rem;
+        }
+
+        .content-card h5 {
+            font-size: 1.05rem;
+        }
+
+        .code-block {
+            font-size: 0.85rem;
+            padding: 1rem;
+            line-height: 1.7;
+        }
+
+        /* 移动端表格适配 */
+        .content-card table {
+            display: block;
+            overflow-x: auto;
+        }
+
+        .chapter-nav {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .chapter-btn {
+            width: 100%;
+            text-align: center;
+            padding: 0.7rem 1rem;
+        }
+    }
+  </style>
+  <!-- 引入图标库 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<!-- 侧边栏 -->
+<aside class="sidebar">
+  <div class="sidebar-profile">
+    <img src="../../images/avatar.jpg" alt="个人头像">
+    <h2>kayiwen</h2>
+    <p> BJTU-CS | 持续学习中 </p>
+  </div>
+
+  <!-- 侧边栏导航 -->
+  <ul class="sidebar-nav">
+    <li><a href="../../index.html#profile" class="nav-main-item">个人简介</a></li>
+    <li>
+      <a href="../../index.html#notes" class="nav-main-item active" id="notes-trigger">学习笔记</a>
+      <ul class="submenu submenu-open" id="notes-submenu">
+        <li><a href="../../c_lang.html" style="color: #3498db; background-color: #34495e;">C语言</a></li>
+        <li><a href="../../c_plus.html">C++</a></li>
+        <li><a href="../../python.html">Python</a></li>
+        <li><a href="../../html_css.html">HTML/CSS</a></li>
+      </ul>
+    </li>
+    <li><a href="../../index.html#inspiration" class="nav-main-item">灵感记录</a></li>
+    <li><a href="../../index.html#contact" class="nav-main-item">联系方式</a></li>
+  </ul>
+
+  <!-- 侧边栏联系方式 -->
+  <div class="sidebar-contact">
+    <a href="mailto:kayiwen@outlook.com">
+      <i class="fas fa-envelope"></i> kayiwen@outlook.com
+    </a>
+    <a href="https://github.com/kayi-er" target="_blank">
+      <i class="fab fa-github"></i> github.com/kayi-er
+    </a>
+    <a href="https://www.xiaohongshu.com/user/profile/5cd20855000000001203775f" target="_blank">
+      <i class="fab fa-xiaohongshu"></i> 小红书@kayiii
+    </a>
+    <a href="#" target="_blank">
+      <i class="fab fa-weixin"></i> 公众号：九无清酒
+    </a>
+  </div>
+</aside>
+
+<!-- 章节主体内容 -->
+<main class="main-content">
+  <section class="content-card">
+    <h2>Chap3 程序控制结构</h2>
+
+    <h3>Chap3 程序控制结构</h3>
+    <p>核心结论：本章围绕程序的三种基本控制结构（顺序、选择、循环）展开，详解关系/逻辑/条件表达式的用法，掌握if、switch选择语句和while、do-while、for循环语句的实现，结合循环控制语句（break/continue）和嵌套结构，解决实际编程问题。</p>
+
+    <h4>3.1 关系表达式、逻辑表达式、条件表达式</h4>
+    <p>这三类表达式是控制结构的核心判断依据，用于描述程序执行的条件。</p>
+
+    <h5>3.1.1 关系表达式</h5>
+    <ul>
+      <li><p>关系运算符：共6个，分为两组优先级（高：<code>&lt;</code> <code>&lt;=</code> <code>&gt;</code> <code>&gt;=</code>；低：<code>==</code> <code>!=</code>），结合性自左向右。</p></li>
+      <li><p>表达式定义：用关系运算符连接两个表达式（算术、关系等），结果为逻辑值（1代表真，0代表假）。</p></li>
+      <li>
+        <p>示例：</p>
+        <div class="code-block">
+          int a=0, b=1, c=2;
+          printf("%d\n", a<=c);    // 输出1（真）
+          printf("%d\n", a<=c<=b); // 输出1（等价于(a<=c)<=b，即1<=1为真）
+          printf("%d\n", 5>2>7);   // 输出0（等价于(5>2)>7，即1>7为假）
+        </div>
+      </li>
+      <li><p>注意：避免浮点型用<code>==</code>/<code>!=</code>比较，需通过差值绝对值判断（如<code>fabs(x-1.0)<=1e-6</code>）。</p></li>
+    </ul>
+
+    <h5>3.1.2 逻辑表达式</h5>
+    <ul>
+      <li><p>逻辑运算符：<code>!</code>（非，单目）、<code>&amp;&amp;</code>（与）、<code>||</code>（或），优先级：<code>!</code>&gt;算术&gt;关系&gt;<code>&amp;&amp;</code>&gt;<code>||</code>&gt;赋值，结合性自左向右。</p></li>
+      <li>
+        <p>短路特性：</p>
+        <ul>
+          <li><code>a&amp;&amp;b</code>：a为假时，不计算b（直接返回假）。</li>
+          <li><code>a||b</code>：a为真时，不计算b（直接返回真）。</li>
+        </ul>
+      </li>
+      <li>
+        <p>真值表：</p>
+        <table>
+          <thead>
+          <tr>
+            <th>a（非0为真）</th>
+            <th>b（非0为真）</th>
+            <th>!a</th>
+            <th>!b</th>
+            <th>a&amp;&amp;b</th>
+            <th>a||b</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td>真</td>
+            <td>真</td>
+            <td>0</td>
+            <td>0</td>
+            <td>1</td>
+            <td>1</td>
+          </tr>
+          <tr>
+            <td>真</td>
+            <td>假</td>
+            <td>0</td>
+            <td>1</td>
+            <td>0</td>
+            <td>1</td>
+          </tr>
+          <tr>
+            <td>假</td>
+            <td>真</td>
+            <td>1</td>
+            <td>0</td>
+            <td>0</td>
+            <td>1</td>
+          </tr>
+          <tr>
+            <td>假</td>
+            <td>假</td>
+            <td>1</td>
+            <td>1</td>
+            <td>0</td>
+            <td>0</td>
+          </tr>
+          </tbody>
+        </table>
+      </li>
+      <li>
+        <p>示例：</p>
+        <div class="code-block">
+          int a=1, b=2, m=1, n=1, c=3, d=4;
+          (m=a>b)&&(n=c>d); // a>b为0，m=0，n不计算仍为1
+          printf("m=%d, n=%d\n", m, n); // 输出m=0, n=1
+        </div>
+      </li>
+    </ul>
+
+    <h5>3.1.3 条件表达式</h5>
+    <ul>
+      <li><p>格式：<code>表达式1?表达式2:表达式3</code>，结合性自右向左。</p></li>
+      <li><p>执行流程：表达式1为真则取表达式2的值，否则取表达式3的值。</p></li>
+      <li>
+        <p>示例：</p>
+        <div class="code-block">
+          int max = a>b?a:b; // 求两数最大值
+          int sign = x>0?1:(x==0?0:-1); // 符号函数
+        </div>
+      </li>
+      <li><p>注意：优先级高于赋值，低于关系/逻辑运算符，复杂条件需加括号明确优先级。</p></li>
+    </ul>
+
+    <h4>3.2 顺序结构程序设计</h4>
+    <ul>
+      <li><p>定义：语句按排列顺序逐行执行，无跳转，是最基础的程序结构。</p></li>
+      <li><p>组成语句：赋值语句、复合语句（<code>{}</code>包裹）、函数调用语句。</p></li>
+      <li>
+        <p>示例：计算工业产值（年增长率7.4%，20年后产值）</p>
+        <div class="code-block">
+          #include <stdio.h>
+          #include <math.h>
+          int main() {
+          int n;
+          double p0, p1, r;
+          scanf("%d,%lf,%lf", &n, &p0, &r);
+          p1 = p0 * pow(1 + r, n);
+          printf("20年后产值：%10.4f\n", p1);
+          return 0;
+          }
+        </div>
+      </li>
+    </ul>
+
+    <h4>3.3 选择结构程序设计</h4>
+    <p>选择结构根据条件判断执行不同分支，核心语句为<code>if</code>和<code>switch</code>。</p>
+
+    <h5>3.3.1 if语句</h5>
+    <ul>
+      <li>
+        <p>三种形式：</p>
+        <ol>
+          <li>单分支：<code>if(表达式) 语句;</code></li>
+          <li>双分支：<code>if(表达式) 语句1; else 语句2;</code></li>
+          <li>多分支：<code>if(表达式1) 语句1; else if(表达式2) 语句2; ... else 语句n;</code></li>
+        </ol>
+      </li>
+      <li><p>嵌套规则：else与最近的未匹配if配对，建议用<code>{}</code>明确作用域。</p></li>
+      <li>
+        <p>示例1：判断闰年</p>
+        <div class="code-block">
+          #include <stdio.h>
+          int main() {
+          int year;
+          printf("请输入年号：");
+          scanf("%d", &year);
+          if ((year%4==0&&year%100!=0) || year%400==0)
+          printf("%d是闰年\n", year);
+          else
+          printf("%d不是闰年\n", year);
+          return 0;
+          }
+        </div>
+      </li>
+      <li>
+        <p>示例2：求三个数的最大值</p>
+        <div class="code-block">
+          #include <stdio.h>
+          int main() {
+          int a, b, c, max;
+          printf("请输入三个整数：");
+          scanf("%d%d%d", &a, &b, &c);
+          if (a > b) max = a;
+          else max = b;
+          if (c > max) max = c;
+          printf("最大值：%d\n", max);
+          return 0;
+          }
+        </div>
+      </li>
+    </ul>
+
+    <h5>3.3.2 switch语句</h5>
+    <ul>
+      <li>
+        <p>格式：</p>
+        <div class="code-block">
+          switch(算术表达式) {
+          case 常量表达式1: 语句组1; break;
+          case 常量表达式2: 语句组2; break;
+          ...
+          default: 语句组n+1; // 可省略
+          }
+        </div>
+      </li>
+      <li>
+        <p>说明：</p>
+        <ul>
+          <li>表达式为整型/字符型/枚举型，case常量互不相等。</li>
+          <li><code>break</code>用于跳出switch，否则执行后续case（穿透特性）。</li>
+          <li>default可在任意位置，不影响执行逻辑。</li>
+        </ul>
+      </li>
+      <li>
+        <p>示例：成绩等级评定</p>
+        <div class="code-block">
+          #include <stdio.h>
+          int main() {
+          int score, grade;
+          printf("输入成绩（0~100）：");
+          scanf("%d", &score);
+          grade = score / 10;
+          switch(grade) {
+          case 10:
+          case 9: printf("等级A\n"); break;
+          case 8: printf("等级B\n"); break;
+          case 7: printf("等级C\n"); break;
+          case 6: printf("等级D\n"); break;
+          default: printf("等级E\n");
+          }
+          return 0;
+          }
+        </div>
+      </li>
+    </ul>
+
+    <h5>3.3.3 应用举例：求解一元二次方程<code>ax²+bx+c=0</code></h5>
+    <div class="code-block">
+      #include <stdio.h>
+      #include <math.h>
+      int main() {
+      double a, b, c, delta, k;
+      scanf("%lf,%lf,%lf", &a, &b, &c);
+      if (a == 0) {
+      if (b != 0)
+      printf("唯一根：%f\n", -c/b);
+      else if (c == 0)
+      printf("无穷多根\n");
+      else
+      printf("无解\n");
+      } else {
+      delta = b*b - 4*a*c;
+      if (delta == 0)
+      printf("两个相同实根：%f\n", -b/(2*a));
+      else if (delta > 0)
+      printf("两个不同实根：%f, %f\n",
+      (-b+sqrt(delta))/(2*a), (-b-sqrt(delta))/(2*a));
+      else {
+      k = sqrt(-delta)/(2*a);
+      printf("两个虚根：%f+%fi, %f-%fi\n", -b/(2*a), k, -b/(2*a), k);
+      }
+      }
+      return 0;
+      }
+    </div>
+
+    <h4>3.4 循环结构程序设计</h4>
+    <p>循环结构重复执行某段语句，核心语句为<code>while</code>、<code>do-while</code>、<code>for</code>，用于处理重复任务。</p>
+
+    <h5>3.4.1 while语句（当型循环）</h5>
+    <ul>
+      <li><p>格式：<code>while(表达式) 语句;</code></p></li>
+      <li><p>执行流程：先判断表达式，真则执行循环体，需包含使表达式变化的语句（避免死循环）。</p></li>
+      <li><p>特点：可能一次不执行循环体。</p></li>
+      <li>
+        <p>示例：计算1+2+...+10000</p>
+        <div class="code-block">
+          #include <stdio.h>
+          int main() {
+          int i=1, sum=0;
+          while (i <= 10000) {
+          sum += i;
+          i++;
+          }
+          printf("和：%d\n", sum);
+          return 0;
+          }
+        </div>
+      </li>
+    </ul>
+
+    <h5>3.4.2 do-while语句（直到型循环）</h5>
+    <ul>
+      <li><p>格式：<code>do { 语句; } while(表达式);</code></p></li>
+      <li><p>执行流程：先执行循环体，再判断表达式，至少执行一次。</p></li>
+      <li>
+        <p>示例：求满足<code>1+2+...+n&lt;500</code>的最大n</p>
+        <div class="code-block">
+          #include <stdio.h>
+          int main() {
+          int n=0, sum=0;
+          do {
+          n++;
+          sum += n;
+          } while (sum < 500);
+          printf("最大n：%d，和：%d\n", n-1, sum-n);
+          return 0;
+          }
+        </div>
+      </li>
+    </ul>
+
+    <h5>3.4.3 for语句</h5>
+    <ul>
+      <li>
+        <p>格式：<code>for(表达式1;表达式2;表达式3) 语句;</code></p>
+        <ul>
+          <li>表达式1：初始化循环变量（可多个，逗号分隔）。</li>
+          <li>表达式2：循环条件（省略则为真，死循环）。</li>
+          <li>表达式3：更新循环变量（可多个，逗号分隔）。</li>
+        </ul>
+      </li>
+      <li><p>灵活用法：可省略任意表达式（如<code>for(;;)</code>为死循环）。</p></li>
+      <li>
+        <p>示例：打印九九乘法表</p>
+        <div class="code-block">
+          #include <stdio.h>
+          int main() {
+          int i, j, m;
+          printf("*");
+          for (j=1; j<=9; j++)
+          printf("%4d", j);
+          printf("\n");
+          for (i=1; i<=9; i++) {
+          printf("%d", i);
+          for (j=1; j<=i; j++) {
+          m = i*j;
+          printf("%4d", m);
+          }
+          printf("\n");
+          }
+          return 0;
+          }
+        </div>
+      </li>
+    </ul>
+
+    <h5>3.4.4 循环控制语句（break/continue）</h5>
+    <ul>
+      <li><p><code>break</code>：跳出当前循环或switch语句，终止整个循环。</p></li>
+      <li><p><code>continue</code>：跳过本次循环剩余语句，进入下一次循环。</p></li>
+      <li>
+        <p>示例：打印100-200之间能被7整除的数</p>
+        <div class="code-block">
+          #include <stdio.h>
+          int main() {
+          for (int n=100; n<=200; n++) {
+          if (n%7 != 0)
+          continue; // 跳过非7的倍数，进入下一次循环
+          printf("%5d", n);
+          }
+          printf("\n");
+          return 0;
+          }
+        </div>
+      </li>
+    </ul>
+
+    <h5>3.4.5 循环嵌套</h5>
+    <ul>
+      <li><p>定义：循环体内包含另一个循环，用于处理多维数据（如矩阵、表格）。</p></li>
+      <li>
+        <p>示例：斐波那契数列前12项（每行6项）</p>
+        <div class="code-block">
+          #include <stdio.h>
+          int main() {
+          int f2=1, f1=1, f, n;
+          printf("%-8d%-8d", f2, f1);
+          for (n=3; n<=12; n++) {
+          f = f1 + f2;
+          printf("%-8d", f);
+          if (n%6 == 0)
+          printf("\n");
+          f2 = f1;
+          f1 = f;
+          }
+          return 0;
+          }
+        </div>
+      </li>
+    </ul>
+
+    <h5>3.4.6 应用举例</h5>
+    <ol>
+      <li>穷举法：搬砖问题（36块砖36人搬，男搬4、女搬3、两小孩搬1，一次搬完）</li>
+    </ol>
+    <div class="code-block">
+      #include <stdio.h>
+      int main() {
+      int men, women, children;
+      for (men=0; men<=8; men++) { // 男最多搬32块，men<=8
+      for (women=0; women<=11; women++) { // 女最多搬33块，women<=11
+      children = 36 - men - women;
+      if (4*men + 3*women + children/2 == 36 && children%2 == 0) {
+      printf("男：%d，女：%d，小孩：%d\n", men, women, children);
+      }
+      }
+      }
+      return 0;
+      }
+    </div>
+    <ol start='2'>
+      <li>迭代法：求斐波那契数列前12项（循环实现）</li>
+    </ol>
+    <div class="code-block">
+      #include <stdio.h>
+      int main() {
+      int f[12] = {1, 1}; // 前两项为1
+      for (int i=2; i<12; i++) {
+      f[i] = f[i-1] + f[i-2];
+      }
+      for (int i=0; i<12; i++) {
+      printf("%-6d", f[i]);
+      if ((i+1)%6 == 0)
+      printf("\n");
+      }
+      return 0;
+      }
+    </div>
+
+    <!-- 章节导航按钮 -->
+    <div class="chapter-nav">
+      <a href="Chap2.html" class="chapter-btn">上一章</a>
+      <a href="../../c_lang.html" class="chapter-btn catalog-btn">返回目录</a>
+      <a href="Chap4.html" class="chapter-btn">下一章</a>
+    </div>
+  </section>
+
+  <!-- 页脚 -->
+  <footer>
+    © 2026 kayiwen - C语言学习笔记 | 持续更新中
+  </footer>
+</main>
+
+<!-- 子菜单展开/折叠脚本 -->
+<script>
+  const notesTrigger = document.getElementById('notes-trigger');
+  const notesSubmenu = document.getElementById('notes-submenu');
+
+  notesTrigger.addEventListener('click', (e) => {
+      e.preventDefault();
+      notesSubmenu.classList.toggle('submenu-open');
+  });
+</script>
+</body>
+</html>

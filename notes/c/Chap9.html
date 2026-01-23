@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chap9 指针高级应用与动态数据结构 - C语言学习笔记</title>
+  <style>
+    /* 全局样式重置 */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        scroll-behavior: smooth; /* 平滑滚动锚点 */
+    }
+
+    /* 页面背景和基础样式 */
+    body {
+        background-color: #f8f9fa;
+        color: #2c3e50;
+        line-height: 1.7;
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* 侧边栏样式 */
+    .sidebar {
+        width: 250px;
+        background-color: #2c3e50;
+        color: white;
+        padding: 2rem 1rem;
+        position: fixed;
+        height: 100vh;
+        box-shadow: 3px 0 8px rgba(0,0,0,0.15);
+        overflow-y: auto;
+        transition: all 0.3s ease;
+    }
+
+    /* 侧边栏头像/个人信息 */
+    .sidebar-profile {
+        text-align: center;
+        margin-bottom: 2.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(52, 152, 219, 0.3);
+    }
+
+    .sidebar-profile img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #3498db;
+        margin-bottom: 1rem;
+        box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
+    }
+
+    .sidebar-profile h2 {
+        font-size: 1.4rem;
+        margin-bottom: 0.5rem;
+        letter-spacing: 0.5px;
+    }
+
+    .sidebar-profile p {
+        color: #bdc3c7;
+        font-size: 0.9rem;
+    }
+
+    /* 侧边栏导航基础样式 */
+    .sidebar-nav {
+        list-style: none;
+    }
+
+    .sidebar-nav li {
+        margin-bottom: 0.8rem;
+    }
+
+    /* 主导航项 */
+    .nav-main-item {
+        color: white;
+        text-decoration: none;
+        display: block;
+        padding: 0.8rem 1rem;
+        border-radius: 6px;
+        transition: all 0.3s;
+        font-weight: 500;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .nav-main-item::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 4px;
+        height: 100%;
+        background-color: #3498db;
+        transform: scaleY(0);
+        transition: transform 0.3s;
+    }
+
+    .nav-main-item:hover,
+    .nav-main-item.active {
+        background-color: rgba(52, 152, 219, 0.2);
+        color: #3498db;
+    }
+
+    .nav-main-item:hover::before,
+    .nav-main-item.active::before {
+        transform: scaleY(1);
+    }
+
+    /* 学习笔记子菜单样式 */
+    .submenu {
+        list-style: none;
+        margin-left: 1rem;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease-in-out;
+    }
+
+    .submenu-open {
+        max-height: 500px;
+    }
+
+    .submenu li {
+        margin-bottom: 0.5rem;
+    }
+
+    .submenu a {
+        color: #bdc3c7;
+        text-decoration: none;
+        display: block;
+        padding: 0.6rem 1rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+    }
+
+    .submenu a:hover {
+        background-color: #34495e;
+        color: #3498db;
+        padding-left: 1.2rem;
+    }
+
+    /* 侧边栏底部联系方式 */
+    .sidebar-contact {
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(52, 152, 219, 0.3);
+    }
+
+    .sidebar-contact a {
+        color: #bdc3c7;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+    }
+
+    .sidebar-contact a:hover {
+        color: #3498db;
+        transform: translateX(5px);
+    }
+
+    .sidebar-contact i {
+        margin-right: 0.8rem;
+        font-size: 1.1rem;
+        width: 18px;
+        text-align: center;
+    }
+
+    /* 主内容区域 */
+    .main-content {
+        flex: 1;
+        margin-left: 250px;
+        padding: 2rem 3rem;
+        background-color: #f8f9fa;
+    }
+
+    /* 内容卡片样式 */
+    .content-card {
+        background: white;
+        padding: 2.5rem 3rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        margin-bottom: 2.5rem;
+        border-top: 4px solid #3498db;
+    }
+
+    /* 标题样式层级 */
+    .content-card h2 {
+        color: #2c3e50;
+        margin-bottom: 2rem;
+        border-bottom: 3px solid #3498db;
+        padding-bottom: 0.8rem;
+        font-size: 1.8rem;
+        letter-spacing: 1px;
+    }
+
+    .content-card h3 {
+        color: #2c3e50;
+        margin: 2rem 0 1.2rem;
+        font-size: 1.4rem;
+        position: relative;
+        padding-left: 1rem;
+    }
+
+    .content-card h3::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 50%;
+        width: 4px;
+        height: 1.2rem;
+        background-color: #3498db;
+        transform: translateY(-50%);
+    }
+
+    .content-card h4 {
+        color: #3498db;
+        margin: 1.5rem 0 0.8rem;
+        font-size: 1.2rem;
+    }
+
+    .content-card h5 {
+        color: #2980b9;
+        margin: 1.2rem 0 0.6rem;
+        font-size: 1.1rem;
+        padding-left: 0.8rem;
+        border-left: 3px solid #3498db;
+    }
+
+    /* 段落样式 */
+    .content-card p {
+        margin-bottom: 1.2rem;
+        line-height: 1.8;
+        text-align: justify;
+    }
+
+    /* 列表样式 */
+    .content-card ul, .content-card ol {
+        margin-left: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .content-card ul li, .content-card ol li {
+        margin-bottom: 0.6rem;
+        line-height: 1.8;
+    }
+
+    /* 代码块样式 */
+    .code-block {
+        background-color: #2d2d2d;
+        color: #f8f8f2;
+        padding: 1.2rem 1.5rem;
+        border-radius: 8px;
+        margin: 1.5rem 0;
+        overflow-x: auto;
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-size: 0.95rem;
+        line-height: 1.8;
+        white-space: pre;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    /* 代码块滚动条优化 */
+    .code-block::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .code-block::-webkit-scrollbar-thumb {
+        background-color: #3498db;
+        border-radius: 4px;
+    }
+
+    /* 表格样式美化 */
+    .content-card table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.5rem 0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .content-card th, .content-card td {
+        padding: 0.8rem 1rem;
+        text-align: left;
+        border: 1px solid #ecf0f1;
+    }
+
+    .content-card th {
+        background-color: #3498db;
+        color: white;
+        font-weight: 500;
+    }
+
+    .content-card tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+
+    .content-card tr:hover {
+        background-color: #e8f4fd;
+    }
+
+    /* 章节导航按钮容器 */
+    .chapter-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #ecf0f1;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    /* 章节跳转按钮通用样式 */
+    .chapter-btn {
+        display: inline-block;
+        padding: 0.8rem 1.8rem;
+        background-color: #3498db;
+        color: white !important;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+    }
+
+    /* 禁用状态 */
+    .chapter-btn.disabled {
+        background-color: #bdc3c7;
+        cursor: not-allowed;
+        box-shadow: none;
+        pointer-events: none;
+    }
+
+    /* 悬停效果 */
+    .chapter-btn:not(.disabled):hover {
+        background-color: #2980b9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    }
+
+    /* 目录按钮特殊样式 */
+    .chapter-btn.catalog-btn {
+        background-color: #2c3e50;
+    }
+
+    .chapter-btn.catalog-btn:hover {
+        background-color: #1a2530;
+    }
+
+    /* 页脚样式 */
+    footer {
+        text-align: center;
+        color: #7f8c8d;
+        padding: 2rem;
+        margin-top: 3rem;
+        font-size: 0.9rem;
+        border-top: 1px solid #ecf0f1;
+    }
+
+    /* 移动端响应式适配 */
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            height: auto;
+            position: relative;
+            padding: 1.5rem;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+
+        .main-content {
+            margin-left: 0;
+            padding: 1.5rem 1rem;
+        }
+
+        .sidebar-profile {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+        }
+
+        .sidebar-profile img {
+            width: 80px;
+            height: 80px;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-wrap: wrap;
+            overflow-x: auto;
+            gap: 0.8rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 0;
+        }
+
+        .submenu {
+            display: none;
+        }
+
+        .sidebar-contact {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+        }
+
+        .sidebar-contact a {
+            margin-bottom: 0;
+        }
+
+        .content-card {
+            padding: 1.5rem 1rem;
+            border-radius: 8px;
+        }
+
+        .content-card h2 {
+            font-size: 1.5rem;
+        }
+
+        .content-card h3 {
+            font-size: 1.3rem;
+        }
+
+        .content-card h4 {
+            font-size: 1.1rem;
+        }
+
+        .content-card h5 {
+            font-size: 1.05rem;
+        }
+
+        .code-block {
+            font-size: 0.85rem;
+            padding: 1rem;
+            line-height: 1.7;
+        }
+
+        /* 移动端表格适配 */
+        .content-card table {
+            display: block;
+            overflow-x: auto;
+        }
+
+        .chapter-nav {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .chapter-btn {
+            width: 100%;
+            text-align: center;
+            padding: 0.7rem 1rem;
+        }
+    }
+  </style>
+  <!-- 引入图标库 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<!-- 侧边栏 -->
+<aside class="sidebar">
+  <div class="sidebar-profile">
+    <img src="../../images/avatar.jpg" alt="个人头像">
+    <h2>kayiwen</h2>
+    <p> BJTU-CS | 持续学习中 </p>
+  </div>
+
+  <!-- 侧边栏导航 -->
+  <ul class="sidebar-nav">
+    <li><a href="../../index.html#profile" class="nav-main-item">个人简介</a></li>
+    <li>
+      <a href="../../index.html#notes" class="nav-main-item active" id="notes-trigger">学习笔记</a>
+      <ul class="submenu submenu-open" id="notes-submenu">
+        <li><a href="../../c_lang.html" style="color: #3498db; background-color: #34495e;">C语言</a></li>
+        <li><a href="../../c_plus.html">C++</a></li>
+        <li><a href="../../python.html">Python</a></li>
+        <li><a href="../../html_css.html">HTML/CSS</a></li>
+      </ul>
+    </li>
+    <li><a href="../../index.html#inspiration" class="nav-main-item">灵感记录</a></li>
+    <li><a href="../../index.html#contact" class="nav-main-item">联系方式</a></li>
+  </ul>
+
+  <!-- 侧边栏联系方式 -->
+  <div class="sidebar-contact">
+    <a href="mailto:kayiwen@outlook.com">
+      <i class="fas fa-envelope"></i> kayiwen@outlook.com
+    </a>
+    <a href="https://github.com/kayi-er" target="_blank">
+      <i class="fab fa-github"></i> github.com/kayi-er
+    </a>
+    <a href="https://www.xiaohongshu.com/user/profile/5cd20855000000001203775f" target="_blank">
+      <i class="fab fa-xiaohongshu"></i> 小红书@kayiii
+    </a>
+    <a href="#" target="_blank">
+      <i class="fab fa-weixin"></i> 公众号：九无清酒
+    </a>
+  </div>
+</aside>
+
+<!-- 章节主体内容 -->
+<main class="main-content">
+  <section class="content-card">
+    <h2>Chap9 指针高级应用与动态数据结构</h2>
+
+    <h3>Chap9 指针高级应用与动态数据结构</h3>
+    <p>核心结论：本章聚焦C语言指针的高级应用与动态数据管理，涵盖指针与函数的深度结合（返回指针的函数、函数指针、函数指针作为参数）、指针数组的定义与应用、命令行参数处理、复杂类型描述解读、二级指针，以及动态内存分配（malloc/calloc/realloc/free）与动态数据结构，是实现灵活模块化编程、动态数据管理和高效内存利用的核心知识点，为复杂程序开发提供关键技术支撑。</p>
+
+    <h4>9.1 指针与函数</h4>
+    <p>指针与函数的结合是模块化编程的核心技巧，包括返回指针的函数、指向函数的指针（函数指针），以及函数指针作为参数，实现函数的动态调用与灵活复用。</p>
+
+    <h5>9.1.1 返回指针值的函数</h5>
+    <p>函数的返回值可以是指向任意数据类型的指针，核心用于返回动态分配的内存、数组地址或复杂数据结构的地址。</p>
+    <ul>
+      <li><p>定义格式：<code>数据类型 *函数名(参数表);</code></p>
+        <ul>
+          <li>说明：<code>*</code> 与函数名绑定，函数返回指向指定类型的指针。</li>
+        </ul>
+      </li>
+      <li><p>注意事项：不可返回函数内局部变量的指针（局部变量栈区内存会随函数结束释放），可返回全局变量、静态变量或动态分配的内存地址。</p>
+      </li>
+      <li><p>示例：返回数组指定位置的指针</p>
+        <div class="code-block">
+          #include <stdio.h>
+          int *search(int *x, int n) {
+          int *p;
+          p = x + n; // 指向数组x的第n个元素（下标从0开始）
+          return p;
+          }
+
+          void main() {
+          int arr[] = {10, 20, 30, 40, 50};
+          int *p = search(arr, 2); // 指向arr[2]
+          printf("arr[2] = %d\n", *p); // 输出30
+          }
+        </div>
+      </li>
+    </ul>
+
+    <h5>9.1.2 函数指针（指向函数的指针）</h5>
+    <p>函数指针是指向函数入口地址的指针，可通过指针变量调用函数，实现函数的动态切换。</p>
+    <ul>
+      <li><p>定义格式：<code>返回值类型 (*指针名)(参数类型表);</code></p>
+        <ul>
+          <li>关键区别：<code>int (*p)()</code> 是函数指针（指向返回int的函数），<code>int *p()</code> 是返回int指针的函数。</li>
+        </ul>
+      </li>
+      <li><p>函数调用形式：<code>(*指针名)(实参表列);</code> 或直接 <code>指针名(实参表列);</code>（等价）</p>
+      </li>
+      <li><p>示例：用函数指针调用求最小值函数</p>
+        <div class="code-block">
+          #include <stdio.h>
+          int min(int x, int y) {
+          return x < y ? x : y;
+          }
+
+          void main() {
+          int (*funcPtr)(int, int); // 定义函数指针
+          funcPtr = min; // 指向min函数（函数名即入口地址）
+          int a = 15, b = 8;
+          int m = (*funcPtr)(a, b); // 调用min函数
+          printf("min(%d, %d) = %d\n", a, b, m); // 输出8
+          }
+        </div>
+      </li>
+    </ul>
+
+    <h5>9.1.3 函数指针作为函数参数</h5>
+    <p>将函数指针作为参数传入其他函数，可在被调函数中动态调用不同功能的函数，提升代码灵活性。</p>
+    <ul>
+      <li><p>应用场景：实现通用处理函数（如process函数可动态调用max/min/add）</p>
+      </li>
+      <li><p>示例：用函数指针参数实现多功能计算</p>
+        <div class="code-block">
+          #include <stdio.h>
+          // 待传入的功能函数
+          int max(int x, int y) { printf("max="); return x > y ? x : y; }
+          int min(int x, int y) { printf("min="); return x < y ? x : y; }
+          int add(int x, int y) { printf("sum="); return x + y; }
+
+          // 接收函数指针参数的通用函数
+          void process(int x, int y, int (*fun)(int, int)) {
+          int result = fun(x, y); // 调用传入的函数
+          printf("%d\n", result);
+          }
+
+          void main() {
+          int a = 10, b = 5;
+          process(a, b, max);  // 调用max，输出max=10
+          process(a, b, min);  // 调用min，输出min=5
+          process(a, b, add);  // 调用add，输出sum=15
+          }
+        </div>
+      </li>
+    </ul>
+
+    <hr />
+    <p>&nbsp;</p>
+
+    <h4>9.2 指针数组</h4>
+    <p>指针数组是元素为指针的数组，核心用于存储多个字符串地址或数组地址，比二维数组更灵活（节省内存、便于修改指向）。</p>
+
+    <h5>9.2.1 指针数组的定义</h5>
+    <ul>
+      <li><p>格式：<code>数据类型 *数组名[常量表达式];</code></p>
+        <ul>
+          <li>说明：<code>[]</code> 优先级高于 <code>*</code>，数组的每个元素都是指向指定类型的指针。</li>
+        </ul>
+      </li>
+      <li><p>与数组指针的区别：</p>
+        <ul>
+          <li>指针数组 <code>int *a[4]</code>：4个元素，每个是int指针（存储地址）；</li>
+          <li>数组指针 <code>int (*a)[4]</code>：1个指针，指向含4个int元素的一维数组。</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h5>9.2.2 指针数组的初始化</h5>
+    <ul>
+      <li><p>核心场景：存储多个字符串（字符串常量地址）</p>
+      </li>
+      <li><p>示例：字符串指针数组初始化</p>
+        <div class="code-block">
+          #include <stdio.h>
+          void main() {
+          // 指针数组存储5个字符串的地址
+          char *strArr[] = {"Beijing", "Jiaotong", "University", "C", "Language"};
+          printf("strArr[1] = %s\n", strArr[1]);    // 输出Jiaotong
+          printf("*(strArr+2) = %s\n", *(strArr+2));// 输出University
+          printf("*strArr[3] = %c\n", *strArr[3]);  // 输出C（取第3个指针指向的首字符）
+          }
+        </div>
+      </li>
+    </ul>
+
+    <h5>9.2.3 指针数组的应用</h5>
+    <ul>
+      <li><p>典型场景：字符串排序（通过交换指针指向实现，无需移动字符串本身，效率高）</p>
+      </li>
+      <li><p>示例：指针数组实现字符串按字母顺序排序</p>
+        <div class="code-block">
+          #include <stdio.h>
+          #include <string.h>
+
+          // 排序函数：按ASCII码升序排序
+          void sort(char *name[], int n) {
+          char *temp;
+          int i, j, k;
+          for (i = 0; i < n-1; i++) {
+          k = i;
+          for (j = i+1; j < n; j++) {
+          // 比较两个字符串
+          if (strcmp(name[k], name[j]) > 0) {
+          k = j; // 记录当前最小字符串的下标
+          }
+          }
+          // 交换指针指向（不移动字符串）
+          if (k != i) {
+          temp = name[i];
+          name[i] = name[k];
+          name[k] = temp;
+          }
+          }
+          }
+
+          // 打印函数
+          void print(char *name[], int n) {
+          for (int i = 0; i < n; i++) {
+          printf("%s\n", name[i]);
+          }
+          }
+
+          void main() {
+          char *name[] = {"Follow me", "BASIC", "Great Wall", "FORTRAN", "Computer"};
+          int n = 5;
+          sort(name, n);
+          print(name, n);
+          // 输出结果：BASIC、Computer、Follow me、FORTRAN、Great Wall
+          }
+        </div>
+      </li>
+    </ul>
+
+    <hr />
+    <p>&nbsp;</p>
+
+    <h4>9.3 命令行参数</h4>
+    <p>C程序可通过<code>main</code>函数的参数接收命令行输入的参数，实现程序的外部配置（如指定输入输出文件、运行模式）。</p>
+
+    <h5>9.3.1 命令行参数的格式</h5>
+    <ul>
+      <li><p><code>main</code>函数的参数原型：<code>int main(int argc, char *argv[]);</code></p>
+        <ul>
+          <li><p><code>argc</code>（argument count）：命令行参数的个数（包含程序名本身，最小为1）；</p>
+          </li>
+          <li><p><code>argv</code>（argument vector）：字符指针数组，每个元素指向一个命令行参数字符串；</p>
+            <ul>
+              <li><code>argv[0]</code>：程序可执行文件名；</li>
+              <li><code>argv[1]~argv[argc-1]</code>：用户输入的参数；</li>
+              <li><code>argv[argc]</code>：NULL（结束标志）。</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+
+    <h5>9.3.2 示例：输出所有命令行参数</h5>
+    <div class="code-block">
+      #include <stdio.h>
+      int main(int argc, char *argv[]) {
+      printf("参数个数 argc = %d\n", argc);
+      for (int i = 0; i < argc; i++) {
+      printf("argv[%d]: %s\n", i, argv[i]);
+      }
+      return 0;
+      }
+    </div>
+    <ul>
+      <li><p>运行命令：<code>./program.exe hello world 123</code></p>
+      </li>
+      <li><p>输出结果：</p>
+        <div class="code-block">
+          参数个数 argc = 4
+          argv[0]: ./program.exe
+          argv[1]: hello
+          argv[2]: world
+          argv[3]: 123
+        </div>
+      </li>
+    </ul>
+
+    <h5>9.3.3 注意事项</h5>
+    <ul>
+      <li>命令行参数以空格分隔；</li>
+      <li>若参数包含空格，需用双引号包裹（如<code>"hello world"</code>视为一个参数）；</li>
+      <li>IDE中设置命令行参数：需在项目配置的“调试”选项中指定“程序参数”。</li>
+    </ul>
+
+    <hr />
+    <p>&nbsp;</p>
+
+    <h4>9.4 复杂类型描述与解读</h4>
+    <p>C语言中复杂类型（如函数指针、指针数组、数组指针）的描述需遵循“右侧优先法则”，从标识符出发，先右后左解析。</p>
+
+    <h5>9.4.1 解读原则</h5>
+    <ol>
+      <li>找到被定义的标识符，从标识符向外解析；</li>
+      <li>优先级：<code>[]</code>（数组）和<code>()</code>（函数）高于<code>*</code>（指针）；</li>
+      <li>结合性：<code>[]</code>和<code>()</code>从左向右，<code>*</code>从右向左。</li>
+    </ol>
+
+    <h5>9.4.2 常见复杂类型示例</h5>
+    <table>
+      <thead>
+      <tr><th>类型描述</th><th>解读结果</th></tr></thead>
+      <tbody>
+      <tr><td><code>int (*p)[4]</code></td><td>p是指针，指向含4个int元素的一维数组</td></tr>
+      <tr><td><code>int *p[4]</code></td><td>p是数组，含4个int指针元素</td></tr>
+      <tr><td><code>int (*p)(int)</code></td><td>p是函数指针，指向返回int、参数为int的函数</td></tr>
+      <tr><td><code>int *(*p)(int)</code></td><td>p是函数指针，指向返回int指针、参数为int的函数</td></tr>
+      <tr><td><code>char **argv</code></td><td>argv是指针，指向char指针（二级指针）</td></tr>
+      </tbody>
+    </table>
+
+    <hr />
+    <p>&nbsp;</p>
+
+    <h4>9.5 指向指针的指针（二级指针）</h4>
+    <p>二级指针是指向指针变量的指针，核心用于处理指针数组、动态二维数组等场景。</p>
+
+    <h5>9.5.1 定义与初始化</h5>
+    <ul>
+      <li><p>格式：<code>数据类型 **指针名;</code></p>
+      </li>
+      <li><p>核心关系：</p>
+        <ul>
+          <li><code>**pp</code>：访问最终指向的数据；</li>
+          <li><code>*pp</code>：访问中间指针变量（一级指针）；</li>
+          <li><code>pp</code>：二级指针本身（存储一级指针的地址）。</li>
+        </ul>
+      </li>
+      <li><p>示例：二级指针访问int变量</p>
+        <div class="code-block">
+          #include <stdio.h>
+          void main() {
+          int a = 10;
+          int *p = &a;    // 一级指针，指向a
+          int **pp = &p;  // 二级指针，指向p
+
+          printf("a = %d\n", a);
+          printf("*p = %d\n", *p);       // 等价于a
+          printf("**pp = %d\n", **pp);   // 等价于a
+          printf("&p = %p, pp = %p\n", &p, pp); // 地址相同
+          }
+        </div>
+      </li>
+    </ul>
+
+    <h5>9.5.2 应用场景：处理指针数组</h5>
+    <div class="code-block">
+      #include <stdio.h>
+      void main() {
+      char *strArr[] = {"Apple", "Banana", "Orange"};
+      char **pp = strArr; // 二级指针指向指针数组首元素（strArr[0]的地址）
+
+      for (int i = 0; i < 3; i++) {
+      printf("strArr[%d]: %s\n", i, *(pp + i)); // 等价于strArr[i]
+      }
+      }
+    </div>
+
+    <hr />
+    <p>&nbsp;</p>
+
+    <h4>9.6 动态数据结构与动态内存分配</h4>
+    <p>静态数据结构（如数组）大小固定，动态内存分配通过<code>malloc/calloc/realloc/free</code>函数在堆区分配内存，实现灵活的内存管理（按需分配、释放）。</p>
+
+    <h5>9.6.1 动态内存分配概述</h5>
+    <ul>
+      <li>堆区：程序运行时系统分配的内存区域，大小不固定，需手动申请和释放；</li>
+      <li>核心函数：需包含头文件<code>#include <stdlib.h></code>；</li>
+      <li>常见场景：动态数组、动态结构体数组、链表等数据结构。</li>
+    </ul>
+
+    <h5>9.6.2 动态内存分配函数</h5>
+    <ol>
+      <li><p><code>malloc</code>：分配指定字节数的内存（未初始化）</p>
+        <ul>
+          <li><p>原型：<code>void *malloc(unsigned int size);</code></p>
+          </li>
+          <li><p>示例：动态分配10个int元素的数组</p>
+            <div class="code-block">
+              #include <stdio.h>
+              #include <stdlib.h>
+              void main() {
+              int n = 10;
+              int *arr = (int *)malloc(n * sizeof(int)); // 强制类型转换为int*
+              if (arr == NULL) { // 检查分配是否成功
+              printf("内存分配失败\n");
+              exit(1);
+              }
+              // 初始化数组
+              for (int i = 0; i < n; i++) {
+              arr[i] = i + 1;
+              }
+              // 输出
+              for (int i = 0; i < n; i++) {
+              printf("%d ", arr[i]); // 输出1 2 ... 10
+              }
+              free(arr); // 释放内存
+              arr = NULL; // 避免野指针
+              }
+            </div>
+          </li>
+        </ul>
+      </li>
+      <li><p><code>calloc</code>：分配n个指定大小的内存（初始化为0）</p>
+        <ul>
+          <li><p>原型：<code>void *calloc(unsigned int n, unsigned int size);</code></p>
+          </li>
+          <li><p>示例：动态分配5个double元素的数组（初始为0）</p>
+            <div class="code-block">
+              double *dp = (double *)calloc(5, sizeof(double));
+              if (dp != NULL) {
+              for (int i = 0; i < 5; i++) {
+              printf("%lf ", dp[i]); // 输出0.000000 0.000000 ...
+              }
+              }
+              free(dp);
+              dp = NULL;
+            </div>
+          </li>
+        </ul>
+      </li>
+      <li><p><code>realloc</code>：重新分配已动态分配的内存（扩容/缩容）</p>
+        <ul>
+          <li><p>原型：<code>void *realloc(void *p, unsigned int new_size);</code></p>
+          </li>
+          <li><p>注意：</p>
+            <ul>
+              <li>若原内存后有足够空间，直接扩容；否则分配新内存并复制原数据，释放原内存；</li>
+              <li>分配失败返回NULL，原内存不释放，需保存原指针。</li>
+            </ul>
+          </li>
+          <li><p>示例：将原数组扩容为15个int元素</p>
+            <div class="code-block">
+              int *arr = (int *)malloc(10 * sizeof(int));
+              int *new_arr = (int *)realloc(arr, 15 * sizeof(int));
+              if (new_arr != NULL) {
+              arr = new_arr; // 指向新内存
+              // 初始化新增元素
+              for (int i = 10; i < 15; i++) {
+              arr[i] = i + 1;
+              }
+              } else {
+              printf("扩容失败\n");
+              free(arr); // 释放原内存
+              }
+              free(arr);
+              arr = NULL;
+            </div>
+          </li>
+        </ul>
+      </li>
+      <li><p><code>free</code>：释放动态分配的内存</p>
+        <ul>
+          <li><p>原型：<code>void free(void *p);</code></p>
+          </li>
+          <li><p>注意：</p>
+            <ul>
+              <li>仅能释放堆区动态分配的内存，不可释放栈区变量（如局部数组）；</li>
+              <li>释放后指针变为野指针，需置为NULL；</li>
+              <li>不可重复释放同一内存。</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ol>
+
+    <h5>9.6.3 动态内存分配的常见错误</h5>
+    <ul>
+      <li>内存泄漏：动态分配的内存未释放，程序运行期间持续占用；</li>
+      <li>野指针：释放内存后未置NULL，继续访问该指针；</li>
+      <li>越界访问：动态数组访问超出分配的大小；</li>
+      <li>重复释放：同一内存被多次调用<code>free</code></li>
+    </ul>
+
+    <!-- 章节导航按钮 -->
+    <div class="chapter-nav">
+      <a href="Chap8.html" class="chapter-btn">上一章</a>
+      <a href="../../c_lang.html" class="chapter-btn catalog-btn">返回目录</a>
+      <a href="Chap10.html" class="chapter-btn">下一章</a>
+    </div>
+  </section>
+
+  <!-- 页脚 -->
+  <footer>
+    © 2026 kayiwen - C语言学习笔记 | 持续更新中
+  </footer>
+</main>
+
+<!-- 子菜单展开/折叠脚本 -->
+<script>
+  const notesTrigger = document.getElementById('notes-trigger');
+  const notesSubmenu = document.getElementById('notes-submenu');
+
+  notesTrigger.addEventListener('click', (e) => {
+      e.preventDefault();
+      notesSubmenu.classList.toggle('submenu-open');
+  });
+</script>
+</body>
+</html>

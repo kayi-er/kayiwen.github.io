@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chap7 字符数组 - C语言学习笔记</title>
+  <style>
+    /* 全局样式重置 */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        scroll-behavior: smooth; /* 平滑滚动锚点 */
+    }
+
+    /* 页面背景和基础样式 */
+    body {
+        background-color: #f8f9fa;
+        color: #2c3e50;
+        line-height: 1.7;
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* 侧边栏样式 */
+    .sidebar {
+        width: 250px;
+        background-color: #2c3e50;
+        color: white;
+        padding: 2rem 1rem;
+        position: fixed;
+        height: 100vh;
+        box-shadow: 3px 0 8px rgba(0,0,0,0.15);
+        overflow-y: auto;
+        transition: all 0.3s ease;
+    }
+
+    /* 侧边栏头像/个人信息 */
+    .sidebar-profile {
+        text-align: center;
+        margin-bottom: 2.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(52, 152, 219, 0.3);
+    }
+
+    .sidebar-profile img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #3498db;
+        margin-bottom: 1rem;
+        box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
+    }
+
+    .sidebar-profile h2 {
+        font-size: 1.4rem;
+        margin-bottom: 0.5rem;
+        letter-spacing: 0.5px;
+    }
+
+    .sidebar-profile p {
+        color: #bdc3c7;
+        font-size: 0.9rem;
+    }
+
+    /* 侧边栏导航基础样式 */
+    .sidebar-nav {
+        list-style: none;
+    }
+
+    .sidebar-nav li {
+        margin-bottom: 0.8rem;
+    }
+
+    /* 主导航项 */
+    .nav-main-item {
+        color: white;
+        text-decoration: none;
+        display: block;
+        padding: 0.8rem 1rem;
+        border-radius: 6px;
+        transition: all 0.3s;
+        font-weight: 500;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .nav-main-item::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 4px;
+        height: 100%;
+        background-color: #3498db;
+        transform: scaleY(0);
+        transition: transform 0.3s;
+    }
+
+    .nav-main-item:hover,
+    .nav-main-item.active {
+        background-color: rgba(52, 152, 219, 0.2);
+        color: #3498db;
+    }
+
+    .nav-main-item:hover::before,
+    .nav-main-item.active::before {
+        transform: scaleY(1);
+    }
+
+    /* 学习笔记子菜单样式 */
+    .submenu {
+        list-style: none;
+        margin-left: 1rem;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease-in-out;
+    }
+
+    .submenu-open {
+        max-height: 500px;
+    }
+
+    .submenu li {
+        margin-bottom: 0.5rem;
+    }
+
+    .submenu a {
+        color: #bdc3c7;
+        text-decoration: none;
+        display: block;
+        padding: 0.6rem 1rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+    }
+
+    .submenu a:hover {
+        background-color: #34495e;
+        color: #3498db;
+        padding-left: 1.2rem;
+    }
+
+    /* 侧边栏底部联系方式 */
+    .sidebar-contact {
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(52, 152, 219, 0.3);
+    }
+
+    .sidebar-contact a {
+        color: #bdc3c7;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+    }
+
+    .sidebar-contact a:hover {
+        color: #3498db;
+        transform: translateX(5px);
+    }
+
+    .sidebar-contact i {
+        margin-right: 0.8rem;
+        font-size: 1.1rem;
+        width: 18px;
+        text-align: center;
+    }
+
+    /* 主内容区域 */
+    .main-content {
+        flex: 1;
+        margin-left: 250px;
+        padding: 2rem 3rem;
+        background-color: #f8f9fa;
+    }
+
+    /* 内容卡片样式 */
+    .content-card {
+        background: white;
+        padding: 2.5rem 3rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        margin-bottom: 2.5rem;
+        border-top: 4px solid #3498db;
+    }
+
+    /* 标题样式层级 */
+    .content-card h2 {
+        color: #2c3e50;
+        margin-bottom: 2rem;
+        border-bottom: 3px solid #3498db;
+        padding-bottom: 0.8rem;
+        font-size: 1.8rem;
+        letter-spacing: 1px;
+    }
+
+    .content-card h3 {
+        color: #2c3e50;
+        margin: 2rem 0 1.2rem;
+        font-size: 1.4rem;
+        position: relative;
+        padding-left: 1rem;
+    }
+
+    .content-card h3::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 50%;
+        width: 4px;
+        height: 1.2rem;
+        background-color: #3498db;
+        transform: translateY(-50%);
+    }
+
+    .content-card h4 {
+        color: #3498db;
+        margin: 1.5rem 0 0.8rem;
+        font-size: 1.2rem;
+    }
+
+    .content-card h5 {
+        color: #2980b9;
+        margin: 1.2rem 0 0.6rem;
+        font-size: 1.1rem;
+        padding-left: 0.8rem;
+        border-left: 3px solid #3498db;
+    }
+
+    /* 段落样式 */
+    .content-card p {
+        margin-bottom: 1.2rem;
+        line-height: 1.8;
+        text-align: justify;
+    }
+
+    /* 列表样式 */
+    .content-card ul, .content-card ol {
+        margin-left: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .content-card ul li, .content-card ol li {
+        margin-bottom: 0.6rem;
+        line-height: 1.8;
+    }
+
+    /* 代码块样式 */
+    .code-block {
+        background-color: #2d2d2d;
+        color: #f8f8f2;
+        padding: 1.2rem 1.5rem;
+        border-radius: 8px;
+        margin: 1.5rem 0;
+        overflow-x: auto;
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-size: 0.95rem;
+        line-height: 1.8;
+        white-space: pre;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    /* 代码块滚动条优化 */
+    .code-block::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .code-block::-webkit-scrollbar-thumb {
+        background-color: #3498db;
+        border-radius: 4px;
+    }
+
+    /* 表格样式美化 */
+    .content-card table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.5rem 0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .content-card th, .content-card td {
+        padding: 0.8rem 1rem;
+        text-align: left;
+        border: 1px solid #ecf0f1;
+    }
+
+    .content-card th {
+        background-color: #3498db;
+        color: white;
+        font-weight: 500;
+    }
+
+    .content-card tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+
+    .content-card tr:hover {
+        background-color: #e8f4fd;
+    }
+
+    /* 章节导航按钮容器 */
+    .chapter-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #ecf0f1;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    /* 章节跳转按钮通用样式 */
+    .chapter-btn {
+        display: inline-block;
+        padding: 0.8rem 1.8rem;
+        background-color: #3498db;
+        color: white !important;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+    }
+
+    /* 禁用状态 */
+    .chapter-btn.disabled {
+        background-color: #bdc3c7;
+        cursor: not-allowed;
+        box-shadow: none;
+        pointer-events: none;
+    }
+
+    /* 悬停效果 */
+    .chapter-btn:not(.disabled):hover {
+        background-color: #2980b9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    }
+
+    /* 目录按钮特殊样式 */
+    .chapter-btn.catalog-btn {
+        background-color: #2c3e50;
+    }
+
+    .chapter-btn.catalog-btn:hover {
+        background-color: #1a2530;
+    }
+
+    /* 页脚样式 */
+    footer {
+        text-align: center;
+        color: #7f8c8d;
+        padding: 2rem;
+        margin-top: 3rem;
+        font-size: 0.9rem;
+        border-top: 1px solid #ecf0f1;
+    }
+
+    /* 移动端响应式适配 */
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            height: auto;
+            position: relative;
+            padding: 1.5rem;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+
+        .main-content {
+            margin-left: 0;
+            padding: 1.5rem 1rem;
+        }
+
+        .sidebar-profile {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+        }
+
+        .sidebar-profile img {
+            width: 80px;
+            height: 80px;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-wrap: wrap;
+            overflow-x: auto;
+            gap: 0.8rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 0;
+        }
+
+        .submenu {
+            display: none;
+        }
+
+        .sidebar-contact {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+        }
+
+        .sidebar-contact a {
+            margin-bottom: 0;
+        }
+
+        .content-card {
+            padding: 1.5rem 1rem;
+            border-radius: 8px;
+        }
+
+        .content-card h2 {
+            font-size: 1.5rem;
+        }
+
+        .content-card h3 {
+            font-size: 1.3rem;
+        }
+
+        .content-card h4 {
+            font-size: 1.1rem;
+        }
+
+        .content-card h5 {
+            font-size: 1.05rem;
+        }
+
+        .code-block {
+            font-size: 0.85rem;
+            padding: 1rem;
+            line-height: 1.7;
+        }
+
+        /* 移动端表格适配 */
+        .content-card table {
+            display: block;
+            overflow-x: auto;
+        }
+
+        .chapter-nav {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .chapter-btn {
+            width: 100%;
+            text-align: center;
+            padding: 0.7rem 1rem;
+        }
+    }
+  </style>
+  <!-- 引入图标库 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<!-- 侧边栏 -->
+<aside class="sidebar">
+  <div class="sidebar-profile">
+    <img src="../../images/avatar.jpg" alt="个人头像">
+    <h2>kayiwen</h2>
+    <p> BJTU-CS | 持续学习中 </p>
+  </div>
+
+  <!-- 侧边栏导航 -->
+  <ul class="sidebar-nav">
+    <li><a href="../../index.html#profile" class="nav-main-item">个人简介</a></li>
+    <li>
+      <a href="../../index.html#notes" class="nav-main-item active" id="notes-trigger">学习笔记</a>
+      <ul class="submenu submenu-open" id="notes-submenu">
+        <li><a href="../../c_lang.html" style="color: #3498db; background-color: #34495e;">C语言</a></li>
+        <li><a href="../../c_plus.html">C++</a></li>
+        <li><a href="../../python.html">Python</a></li>
+        <li><a href="../../html_css.html">HTML/CSS</a></li>
+      </ul>
+    </li>
+    <li><a href="../../index.html#inspiration" class="nav-main-item">灵感记录</a></li>
+    <li><a href="../../index.html#contact" class="nav-main-item">联系方式</a></li>
+  </ul>
+
+  <!-- 侧边栏联系方式 -->
+  <div class="sidebar-contact">
+    <a href="mailto:kayiwen@outlook.com">
+      <i class="fas fa-envelope"></i> kayiwen@outlook.com
+    </a>
+    <a href="https://github.com/kayi-er" target="_blank">
+      <i class="fab fa-github"></i> github.com/kayi-er
+    </a>
+    <a href="https://www.xiaohongshu.com/user/profile/5cd20855000000001203775f" target="_blank">
+      <i class="fab fa-xiaohongshu"></i> 小红书@kayiii
+    </a>
+    <a href="#" target="_blank">
+      <i class="fab fa-weixin"></i> 公众号：九无清酒
+    </a>
+  </div>
+</aside>
+
+<!-- 章节主体内容 -->
+<main class="main-content">
+  <section class="content-card">
+    <h2>Chap7 字符数组</h2>
+
+    <h3>Chap7 字符数组</h3>
+    <p>核心结论：本章聚焦C语言字符数组与字符串的核心应用，涵盖字符数组的定义、初始化、输入输出，字符串与指针的关联，常用字符串处理函数的使用，以及字符数组、指针作为函数参数的实战场景，是处理文本数据、实现字符串操作的核心知识点，也是模块化编程中传递文本数据的关键技术。</p>
+
+    <h4>7.1 字符数组</h4>
+    <p>字符数组是存储字符数据的构造类型，核心用于存放字符串（以<code>'\0'</code>结尾的字符序列），其使用需掌握定义、初始化、输入输出及字符串处理函数的核心规则。</p>
+
+    <h5>7.1.1 字符数组的定义</h5>
+    <p>格式：<code>char 数组名[字符元素个数];</code></p>
+    <ul>
+      <li><p>数组名：符合标识符规则，代表字符数组的首地址（地址常量）。</p>
+      </li>
+      <li><p>字符元素个数：指定数组可存储的最大字符数（包含<code>'\0'</code>）。</p>
+      </li>
+      <li><p>示例：</p>
+        <div class="code-block">
+          char str[20]; // 定义可存储20个字符的字符数组
+          char msg[10]; // 定义可存储10个字符的字符数组
+        </div>
+      </li>
+    </ul>
+
+    <h5>7.1.2 字符数组的初始化</h5>
+    <p>两种核心方式，初始化时需注意<code>'\0'</code>的自动添加规则：</p>
+    <ol>
+      <li><p>逐个字符赋值：</p>
+        <div class="code-block">
+          char str[4] = {'w', 'e', 'i', 'j'}; // 数组长度4，无自动添加'\0'
+          char str2[5] = {'h', 'e', 'l', 'l', 'o'}; // 无'\0'，非字符串形式
+        </div>
+      </li>
+      <li><p>字符串直接赋值（推荐）：</p>
+        <div class="code-block">
+          char str[] = "good morning"; // 自动在末尾添加'\0'，数组长度=字符串长度+1
+          char str2[8] = "welcome"; // 等价于{'w','e','l','c','o','m','e','\0'}
+        </div>
+      </li>
+    </ol>
+    <ul>
+      <li>关键说明：字符串形式初始化会自动添加<code>'\0'</code>（字符串结束标志），数组长度默认包含该结束符；逐个字符赋值需手动添加<code>'\0'</code>才能作为字符串使用。</li>
+    </ul>
+
+    <h5>7.1.3 用字符数组存放字符串</h5>
+    <ul>
+      <li>字符串本质：以<code>'\0'</code>（ASCII码值0）结尾的字符序列，系统通过<code>'\0'</code>判断字符串结束。</li>
+      <li>存储示例：<code>char ch[] = "Good";</code> 存储结构为 <code>G o o d \0</code>，数组长度为5（而非4）。</li>
+      <li>字符串长度：有效字符个数（不含<code>'\0'</code>），需通过<code>strlen</code>函数获取。</li>
+    </ul>
+
+    <h5>7.1.4 字符数组的输入输出</h5>
+    <p>支持逐个字符和整体（字符串）两种方式，需注意输入时的分隔符和结束标志：</p>
+    <ol>
+      <li><p>逐个字符输入输出：</p>
+        <div class="code-block">
+          #include <stdio.h>
+          void main() {
+          char a[3];
+          int i;
+          // 输入
+          for (i = 0; i < 3; i++)
+          scanf("%c", &a[i]);
+          // 输出
+          for (i = 0; i < 3; i++)
+          printf("%c", a[i]);
+          }
+        </div>
+        <ul>
+          <li>说明：空格、回车会被当作输入字符，需注意输入格式。</li>
+        </ul>
+      </li>
+      <li><p>整体输入输出（字符串形式）：</p>
+        <div class="code-block">
+          #include <stdio.h>
+          void main() {
+          char c[4];
+          // 输入：遇空格、回车结束，自动添加'\0'
+          scanf("%s", c);
+          // 输出：遇'\0'结束，无需地址符&（数组名即首地址）
+          printf("%s", c);
+          }
+        </div>
+        <ul>
+          <li><p>关键问题：<code>scanf("%s")</code> 无法读取带空格的字符串，解决方案：</p>
+            <ul>
+              <li><p>使用<code>gets</code>函数（不推荐，存在缓冲区溢出风险）：</p>
+                <div class="code-block">
+                  char str[13];
+                  gets(str); // 可读取带空格的字符串，回车结束
+                </div>
+              </li>
+              <li><p>使用<code>fgets</code>函数（推荐，限制字符数）：</p>
+                <div class="code-block">
+                  char name[20];
+                  fgets(name, 20, stdin); // 最多读19个字符，保留换行符，自动加'\0'
+                </div>
+              </li>
+              <li><p>使用<code>scanf("%[^\n]", str)</code>：</p>
+                <div class="code-block">
+                  char str[13];
+                  scanf("%[^\n]", str); // 遇回车结束，可读取带空格的字符串
+                </div>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ol>
+
+    <h5>7.1.5 字符串处理标准函数</h5>
+    <p>需包含头文件<code>#include <string.h></code>（<code>puts</code>、<code>gets</code>除外），核心函数如下：</p>
+    <ol>
+      <li><p>字符串输出函数<code>puts()</code></p>
+        <ul>
+          <li><p>格式：<code>puts(字符数组名/字符串常量)</code></p>
+          </li>
+          <li><p>功能：输出字符串至终端，遇<code>'\0'</code>结束，并自动换行（将<code>'\0'</code>转为<code>'\n'</code>）。</p>
+          </li>
+          <li><p>示例：</p>
+            <div class="code-block">
+              #include <stdio.h>
+              void main() {
+              char c[] = "BASIC\ndBASE";
+              puts(c); // 可识别转义字符，输出时换行
+              }
+            </div>
+          </li>
+        </ul>
+      </li>
+      <li><p>字符串输入函数<code>gets()</code>（已淘汰）</p>
+        <ul>
+          <li>格式：<code>gets(字符数组名)</code></li>
+          <li>功能：从终端读字符串至字符数组，回车结束，自动将<code>'\n'</code>转为<code>'\0'</code>。</li>
+          <li>缺陷：无缓冲区大小检测，易导致内存溢出，推荐用<code>fgets</code>替代。</li>
+        </ul>
+      </li>
+      <li><p>字符串长度函数<code>strlen()</code></p>
+        <ul>
+          <li><p>格式：<code>strlen(字符数组名/字符串常量)</code></p>
+          </li>
+          <li><p>功能：返回字符串有效字符个数（不含<code>'\0'</code>）。</p>
+          </li>
+          <li><p>示例：</p>
+            <div class="code-block">
+              #include <stdio.h>
+              #include <string.h>
+              void main() {
+              char ch[20] = "12$%ert \619\0pop";
+              printf("长度：%d\n", strlen(ch)); // 输出10（'\0'前的有效字符）
+              puts(ch); // 输出12$%ert 19（\61是'1'的八进制ASCII码）
+              }
+            </div>
+          </li>
+        </ul>
+      </li>
+      <li><p>字符串复制函数<code>strcpy()</code></p>
+        <ul>
+          <li><p>格式：<code>strcpy(目标字符数组, 源字符串)</code></p>
+          </li>
+          <li><p>功能：将源字符串（含<code>'\0'</code>）复制到目标字符数组，目标数组需足够大。</p>
+          </li>
+          <li><p>示例：</p>
+            <div class="code-block">
+              #include <stdio.h>
+              #include <string.h>
+              void main() {
+              char st1[15], st2[] = "C Language";
+              strcpy(st1, st2);
+              puts(st1); // 输出C Language
+              }
+            </div>
+          </li>
+        </ul>
+      </li>
+      <li><p>字符串比较函数<code>strcmp()</code></p>
+        <ul>
+          <li><p>格式：<code>strcmp(字符串1, 字符串2)</code></p>
+          </li>
+          <li><p>功能：按ASCII码逐字符比较，返回值：</p>
+            <ul>
+              <li>0：两字符串相等；</li>
+              <li>正数：字符串1 > 字符串2；</li>
+              <li>负数：字符串1 < 字符串2。</li>
+            </ul>
+          </li>
+          <li><p>注意：不可用<code>==</code>直接比较字符串，需用该函数。</p>
+          </li>
+          <li><p>示例：</p>
+            <div class="code-block">
+              #include <stdio.h>
+              #include <string.h>
+              void main() {
+              char str1[] = "abc", str2[] = "abd";
+              if (strcmp(str1, str2) < 0)
+              printf("str1 < str2\n"); // 输出该结果
+              }
+            </div>
+          </li>
+        </ul>
+      </li>
+      <li><p>字符串大小写转换函数</p>
+        <ul>
+          <li><p><code>strlwr(字符数组)</code>：将大写字母转为小写；</p>
+          </li>
+          <li><p><code>strupr(字符数组)</code>：将小写字母转为大写。</p>
+          </li>
+          <li><p>示例：</p>
+            <div class="code-block">
+              #include <stdio.h>
+              #include <string.h>
+              void main() {
+              char str[] = "Hello World";
+              strlwr(str);
+              printf("%s\n", str); // 输出hello world
+              strupr(str);
+              printf("%s\n", str); // 输出HELLO WORLD
+              }
+            </div>
+          </li>
+        </ul>
+      </li>
+      <li><p>字符串连接函数<code>strcat()</code></p>
+        <ul>
+          <li><p>格式：<code>strcat(目标字符数组, 源字符串)</code></p>
+          </li>
+          <li><p>功能：将源字符串连接到目标字符串末尾，目标数组需足够大（覆盖目标字符串的<code>'\0'</code>）。</p>
+          </li>
+          <li><p>示例：</p>
+            <div class="code-block">
+              #include <stdio.h>
+              #include <string.h>
+              void main() {
+              char ch1[20] = "aaa", ch2[20] = "bbbb";
+              strcat(ch1, ch2);
+              printf("%s\n", ch1); // 输出aaabbbb
+              }
+            </div>
+          </li>
+        </ul>
+      </li>
+    </ol>
+
+    <hr />
+    <p>&nbsp;</p>
+
+    <h4>7.2 字符串与指针</h4>
+    <p>C语言中字符串可通过字符数组或字符指针两种方式表示，指针操作字符串更灵活，但需注意字符串常量的只读特性。</p>
+
+    <h5>7.2.1 字符串的两种表示形式</h5>
+    <ol>
+      <li><p>字符数组形式：</p>
+        <div class="code-block">
+          char str[] = "programming"; // 数组名是首地址（常量），可修改数组元素
+        </div>
+        <ul>
+          <li>特点：字符串存储在栈区，可修改字符内容；数组长度=字符串长度+1（含<code>'\0'</code>）。</li>
+        </ul>
+      </li>
+      <li><p>字符指针形式：</p>
+        <div class="code-block">
+          char *pstr = "programming"; // 指针指向字符串常量（只读区）
+          // 或分步赋值
+          char *pstr;
+          pstr = "programming";
+        </div>
+        <ul>
+          <li>特点：指针是变量，可重新赋值指向其他字符串；字符串常量存储在只读区，不可修改字符内容。</li>
+        </ul>
+      </li>
+    </ol>
+
+    <h5>7.2.2 两种表示形式的核心区别</h5>
+    <table>
+      <thead>
+      <tr><th>特性</th><th>字符数组（<code>char str[]</code>）</th><th>字符指针（<code>char *pstr</code>）</th></tr></thead>
+      <tbody><tr><td>存储位置</td><td>栈区（可修改）</td><td>只读数据区（不可修改）</td></tr><tr><td>变量性质</td><td>地址常量（不可赋值）</td><td>指针变量（可重新赋值）</td></tr><tr><td>内存占用</td><td>字符串长度+1字节</td><td>4字节（32位系统）/8字节（64位系统）</td></tr><tr><td>示例操作</td><td><code>str[0] = 'P'</code>（合法）</td><td><code>pstr[0] = 'P'</code>（非法）</td></tr></tbody>
+    </table>
+
+    <h5>7.2.3 指针操作字符串示例</h5>
+    <ol>
+      <li><p>指针指向字符数组（可修改字符串）：</p>
+        <div class="code-block">
+          #include <stdio.h>
+          void main() {
+          char str[] = "Hello";
+          char *p = str;
+          *p = 'H';          // 修改首字符为'H'
+          *(p + 1) = 'i';    // 修改第二个字符为'i'
+          *(p + 2) = '\0';   // 手动添加结束符
+          printf("%s\n", str); // 输出Hi
+          }
+        </div>
+      </li>
+      <li><p>指针指向字符串常量（不可修改）：</p>
+        <div class="code-block">
+          #include <stdio.h>
+          void main() {
+          char *p = "Hello World";
+          printf("%s\n", p);       // 输出Hello World
+          printf("%c\n", *(p + 6)); // 输出W
+          // p[0] = 'h'; // 错误：字符串常量不可修改
+          }
+        </div>
+      </li>
+      <li><p>指针复制字符串：</p>
+        <div class="code-block">
+          #include <stdio.h>
+          void main() {
+          char a[80], b[80], *pa = a, *pb = b;
+          scanf("%s", pa);
+          while (*pa != '\0')
+          *pb++ = *pa++; // 逐字符复制，指针后移
+          *pb = '\0'; // 手动添加结束符
+          printf("%s\n", b);
+          }
+        </div>
+      </li>
+      <li><p>指针输出字符串部分内容：</p>
+        <div class="code-block">
+          #include <stdio.h>
+          void main() {
+          char *s1 = "C language";
+          s1 += 2; // 指针指向第3个字符（'l'）
+          printf("%s\n", s1); // 输出language
+          }
+        </div>
+      </li>
+    </ol>
+
+    <hr />
+    <p>&nbsp;</p>
+
+    <h4>7.3 字符数组、指针作为函数参数</h4>
+    <p>字符数组名或字符指针可作为函数参数，实现字符串的传递与处理，核心是利用地址传递特性，避免字符串拷贝，提高效率。</p>
+
+    <h5>7.3.1 字符数组作为函数参数</h5>
+    <p>示例1：字符串反序（字符数组参数）</p>
+    <div class="code-block">
+      #include <stdio.h>
+      #include <string.h>
+      void fanxu(char chuan[]) {
+      int i = 0, n = strlen(chuan);
+      char med;
+      for (i = 0; i < n / 2; i++) {
+      med = chuan[i];
+      chuan[i] = chuan[n - i - 1];
+      chuan[n - i - 1] = med;
+      }
+      }
+      void main() {
+      char ch[20];
+      printf("请输入一个字符串（长度不超过20）：\n");
+      fgets(ch, 20, stdin);
+      printf("原始字符串：\n");
+      puts(ch);
+      fanxu(ch);
+      printf("反序后字符串：\n");
+      puts(ch);
+      }
+    </div>
+    <p>示例2：统计字符个数（字符数组参数）</p>
+    <div class="code-block">
+      #include <stdio.h>
+      void main() {
+      char str[80];
+      int letter = 0, digit = 0, blank = 0, others = 0, i;
+      printf("请输入一行字符：\n");
+      gets(str);
+      for (i = 0; str[i] != '\0'; i++) {
+      if ((str[i] >= 'A' && str[i] <= 'Z') || (str[i] >= 'a' && str[i] <= 'z'))
+      letter++;
+      else if (str[i] >= '0' && str[i] <= '9')
+      digit++;
+      else if (str[i] == ' ')
+      blank++;
+      else
+      others++;
+      }
+      printf("字母：%d，数字：%d，空格：%d，其他：%d\n", letter, digit, blank, others);
+      }
+    </div>
+
+    <h5>7.3.2 字符指针作为函数参数</h5>
+    <p>示例1：字符串反序（指针参数）</p>
+    <div class="code-block">
+      #include <stdio.h>
+      #include <string.h>
+      void fanxu(char *m) {
+      int n = strlen(m);
+      char med, *p = m, *q = m + n - 1;
+      for (; p < m + n / 2; p++, q--) {
+      med = *p;
+      *p = *q;
+      *q = med;
+      }
+      }
+      void main() {
+      char ch[20];
+      printf("请输入一个字符串（长度不超过20）：\n");
+      gets(ch);
+      printf("原始字符串：\n");
+      puts(ch);
+      fanxu(ch);
+      printf("反序后字符串：\n");
+      puts(ch);
+      }
+    </div>
+    <p>示例2：删除指定字符（指针参数）</p>
+    <div class="code-block">
+      #include <stdio.h>
+      void del_ch(char *p, char ch) {
+      char *q = p;
+      for (; *p != '\0'; p++) {
+      if (*p != ch) {
+      *q = *p;
+      q++;
+      }
+      }
+      *q = '\0'; // 手动添加结束符
+      }
+      void main() {
+      char str[80], *pt, ch;
+      printf("请输入一个字符串：\n");
+      gets(str);
+      pt = str;
+      printf("请输入要删除的字符：\n");
+      ch = getchar();
+      del_ch(pt, ch);
+      printf("新字符串：\n%s\n", str);
+      }
+    </div>
+    <p>示例3：字符串复制（指针参数）</p>
+    <div class="code-block">
+      #include <stdio.h>
+      void strcopy(char *from, char *to) {
+      while (*from != '\0')
+      *(to++) = *(from++);
+      *to = '\0';
+      }
+      void main() {
+      char a[80], b[80], *pa = a, *pb = b;
+      scanf("%[^\n]", pa);
+      strcopy(pa, pb);
+      printf("%s\n", pb);
+      }
+    </div>
+    <p>&nbsp;</p>
+
+    <!-- 章节导航按钮 -->
+    <div class="chapter-nav">
+      <a href="Chap6.html" class="chapter-btn">上一章</a>
+      <a href="../../c_lang.html" class="chapter-btn catalog-btn">返回目录</a>
+      <a href="Chap8.html" class="chapter-btn">下一章</a>
+    </div>
+  </section>
+
+  <!-- 页脚 -->
+  <footer>
+    © 2026 kayiwen - C语言学习笔记 | 持续更新中
+  </footer>
+</main>
+
+<!-- 子菜单展开/折叠脚本 -->
+<script>
+  const notesTrigger = document.getElementById('notes-trigger');
+  const notesSubmenu = document.getElementById('notes-submenu');
+
+  notesTrigger.addEventListener('click', (e) => {
+      e.preventDefault();
+      notesSubmenu.classList.toggle('submenu-open');
+  });
+</script>
+</body>
+</html>

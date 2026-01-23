@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chap4 模块化程序设计——函数 - C语言学习笔记</title>
+  <style>
+    /* 全局样式重置 */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        scroll-behavior: smooth; /* 平滑滚动锚点 */
+    }
+
+    /* 页面背景和基础样式 */
+    body {
+        background-color: #f8f9fa;
+        color: #2c3e50;
+        line-height: 1.7;
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* 侧边栏样式 */
+    .sidebar {
+        width: 250px;
+        background-color: #2c3e50;
+        color: white;
+        padding: 2rem 1rem;
+        position: fixed;
+        height: 100vh;
+        box-shadow: 3px 0 8px rgba(0,0,0,0.15);
+        overflow-y: auto;
+        transition: all 0.3s ease;
+    }
+
+    /* 侧边栏头像/个人信息 */
+    .sidebar-profile {
+        text-align: center;
+        margin-bottom: 2.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(52, 152, 219, 0.3);
+    }
+
+    .sidebar-profile img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #3498db;
+        margin-bottom: 1rem;
+        box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
+    }
+
+    .sidebar-profile h2 {
+        font-size: 1.4rem;
+        margin-bottom: 0.5rem;
+        letter-spacing: 0.5px;
+    }
+
+    .sidebar-profile p {
+        color: #bdc3c7;
+        font-size: 0.9rem;
+    }
+
+    /* 侧边栏导航基础样式 */
+    .sidebar-nav {
+        list-style: none;
+    }
+
+    .sidebar-nav li {
+        margin-bottom: 0.8rem;
+    }
+
+    /* 主导航项 */
+    .nav-main-item {
+        color: white;
+        text-decoration: none;
+        display: block;
+        padding: 0.8rem 1rem;
+        border-radius: 6px;
+        transition: all 0.3s;
+        font-weight: 500;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .nav-main-item::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 4px;
+        height: 100%;
+        background-color: #3498db;
+        transform: scaleY(0);
+        transition: transform 0.3s;
+    }
+
+    .nav-main-item:hover,
+    .nav-main-item.active {
+        background-color: rgba(52, 152, 219, 0.2);
+        color: #3498db;
+    }
+
+    .nav-main-item:hover::before,
+    .nav-main-item.active::before {
+        transform: scaleY(1);
+    }
+
+    /* 学习笔记子菜单样式 */
+    .submenu {
+        list-style: none;
+        margin-left: 1rem;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease-in-out;
+    }
+
+    .submenu-open {
+        max-height: 500px;
+    }
+
+    .submenu li {
+        margin-bottom: 0.5rem;
+    }
+
+    .submenu a {
+        color: #bdc3c7;
+        text-decoration: none;
+        display: block;
+        padding: 0.6rem 1rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+    }
+
+    .submenu a:hover {
+        background-color: #34495e;
+        color: #3498db;
+        padding-left: 1.2rem;
+    }
+
+    /* 侧边栏底部联系方式 */
+    .sidebar-contact {
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(52, 152, 219, 0.3);
+    }
+
+    .sidebar-contact a {
+        color: #bdc3c7;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+    }
+
+    .sidebar-contact a:hover {
+        color: #3498db;
+        transform: translateX(5px);
+    }
+
+    .sidebar-contact i {
+        margin-right: 0.8rem;
+        font-size: 1.1rem;
+        width: 18px;
+        text-align: center;
+    }
+
+    /* 主内容区域 */
+    .main-content {
+        flex: 1;
+        margin-left: 250px;
+        padding: 2rem 3rem;
+        background-color: #f8f9fa;
+    }
+
+    /* 内容卡片样式 */
+    .content-card {
+        background: white;
+        padding: 2.5rem 3rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        margin-bottom: 2.5rem;
+        border-top: 4px solid #3498db;
+    }
+
+    /* 标题样式层级 */
+    .content-card h2 {
+        color: #2c3e50;
+        margin-bottom: 2rem;
+        border-bottom: 3px solid #3498db;
+        padding-bottom: 0.8rem;
+        font-size: 1.8rem;
+        letter-spacing: 1px;
+    }
+
+    .content-card h3 {
+        color: #2c3e50;
+        margin: 2rem 0 1.2rem;
+        font-size: 1.4rem;
+        position: relative;
+        padding-left: 1rem;
+    }
+
+    .content-card h3::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 50%;
+        width: 4px;
+        height: 1.2rem;
+        background-color: #3498db;
+        transform: translateY(-50%);
+    }
+
+    .content-card h4 {
+        color: #3498db;
+        margin: 1.5rem 0 0.8rem;
+        font-size: 1.2rem;
+    }
+
+    .content-card h5 {
+        color: #2980b9;
+        margin: 1.2rem 0 0.6rem;
+        font-size: 1.1rem;
+        padding-left: 0.8rem;
+        border-left: 3px solid #3498db;
+    }
+
+    /* 段落样式 */
+    .content-card p {
+        margin-bottom: 1.2rem;
+        line-height: 1.8;
+        text-align: justify;
+    }
+
+    /* 列表样式 */
+    .content-card ul, .content-card ol {
+        margin-left: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .content-card ul li, .content-card ol li {
+        margin-bottom: 0.6rem;
+        line-height: 1.8;
+    }
+
+    /* 代码块样式 */
+    .code-block {
+        background-color: #2d2d2d;
+        color: #f8f8f2;
+        padding: 1.2rem 1.5rem;
+        border-radius: 8px;
+        margin: 1.5rem 0;
+        overflow-x: auto;
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-size: 0.95rem;
+        line-height: 1.8;
+        white-space: pre;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    /* 代码块滚动条优化 */
+    .code-block::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .code-block::-webkit-scrollbar-thumb {
+        background-color: #3498db;
+        border-radius: 4px;
+    }
+
+    /* 表格样式美化 */
+    .content-card table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.5rem 0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .content-card th, .content-card td {
+        padding: 0.8rem 1rem;
+        text-align: left;
+        border: 1px solid #ecf0f1;
+    }
+
+    .content-card th {
+        background-color: #3498db;
+        color: white;
+        font-weight: 500;
+    }
+
+    .content-card tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+
+    .content-card tr:hover {
+        background-color: #e8f4fd;
+    }
+
+    /* 章节导航按钮容器 */
+    .chapter-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #ecf0f1;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    /* 章节跳转按钮通用样式 */
+    .chapter-btn {
+        display: inline-block;
+        padding: 0.8rem 1.8rem;
+        background-color: #3498db;
+        color: white !important;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+    }
+
+    /* 禁用状态 */
+    .chapter-btn.disabled {
+        background-color: #bdc3c7;
+        cursor: not-allowed;
+        box-shadow: none;
+        pointer-events: none;
+    }
+
+    /* 悬停效果 */
+    .chapter-btn:not(.disabled):hover {
+        background-color: #2980b9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    }
+
+    /* 目录按钮特殊样式 */
+    .chapter-btn.catalog-btn {
+        background-color: #2c3e50;
+    }
+
+    .chapter-btn.catalog-btn:hover {
+        background-color: #1a2530;
+    }
+
+    /* 页脚样式 */
+    footer {
+        text-align: center;
+        color: #7f8c8d;
+        padding: 2rem;
+        margin-top: 3rem;
+        font-size: 0.9rem;
+        border-top: 1px solid #ecf0f1;
+    }
+
+    /* 移动端响应式适配 */
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            height: auto;
+            position: relative;
+            padding: 1.5rem;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+
+        .main-content {
+            margin-left: 0;
+            padding: 1.5rem 1rem;
+        }
+
+        .sidebar-profile {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+        }
+
+        .sidebar-profile img {
+            width: 80px;
+            height: 80px;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-wrap: wrap;
+            overflow-x: auto;
+            gap: 0.8rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 0;
+        }
+
+        .submenu {
+            display: none;
+        }
+
+        .sidebar-contact {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+        }
+
+        .sidebar-contact a {
+            margin-bottom: 0;
+        }
+
+        .content-card {
+            padding: 1.5rem 1rem;
+            border-radius: 8px;
+        }
+
+        .content-card h2 {
+            font-size: 1.5rem;
+        }
+
+        .content-card h3 {
+            font-size: 1.3rem;
+        }
+
+        .content-card h4 {
+            font-size: 1.1rem;
+        }
+
+        .content-card h5 {
+            font-size: 1.05rem;
+        }
+
+        .code-block {
+            font-size: 0.85rem;
+            padding: 1rem;
+            line-height: 1.7;
+        }
+
+        /* 移动端表格适配 */
+        .content-card table {
+            display: block;
+            overflow-x: auto;
+        }
+
+        .chapter-nav {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .chapter-btn {
+            width: 100%;
+            text-align: center;
+            padding: 0.7rem 1rem;
+        }
+    }
+  </style>
+  <!-- 引入图标库 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<!-- 侧边栏 -->
+<aside class="sidebar">
+  <div class="sidebar-profile">
+    <img src="../../images/avatar.jpg" alt="个人头像">
+    <h2>kayiwen</h2>
+    <p> BJTU-CS | 持续学习中 </p>
+  </div>
+
+  <!-- 侧边栏导航 -->
+  <ul class="sidebar-nav">
+    <li><a href="../../index.html#profile" class="nav-main-item">个人简介</a></li>
+    <li>
+      <a href="../../index.html#notes" class="nav-main-item active" id="notes-trigger">学习笔记</a>
+      <ul class="submenu submenu-open" id="notes-submenu">
+        <li><a href="../../c_lang.html" style="color: #3498db; background-color: #34495e;">C语言</a></li>
+        <li><a href="../../c_plus.html">C++</a></li>
+        <li><a href="../../python.html">Python</a></li>
+        <li><a href="../../html_css.html">HTML/CSS</a></li>
+      </ul>
+    </li>
+    <li><a href="../../index.html#inspiration" class="nav-main-item">灵感记录</a></li>
+    <li><a href="../../index.html#contact" class="nav-main-item">联系方式</a></li>
+  </ul>
+
+  <!-- 侧边栏联系方式 -->
+  <div class="sidebar-contact">
+    <a href="mailto:kayiwen@outlook.com">
+      <i class="fas fa-envelope"></i> kayiwen@outlook.com
+    </a>
+    <a href="https://github.com/kayi-er" target="_blank">
+      <i class="fab fa-github"></i> github.com/kayi-er
+    </a>
+    <a href="https://www.xiaohongshu.com/user/profile/5cd20855000000001203775f" target="_blank">
+      <i class="fab fa-xiaohongshu"></i> 小红书@kayiii
+    </a>
+    <a href="#" target="_blank">
+      <i class="fab fa-weixin"></i> 公众号：九无清酒
+    </a>
+  </div>
+</aside>
+
+<!-- 章节主体内容 -->
+<main class="main-content">
+  <section class="content-card">
+    <h2>Chap4 模块化程序设计——函数</h2>
+
+    <h3>Chap4 模块化程序设计——函数</h3>
+    <p>核心结论：本章围绕模块化程序设计展开，详解函数的定义、调用、参数传递、多级调用（嵌套与递归），明确变量的作用域与存储类别，介绍编译预处理命令，实现复杂问题的拆分与高效解决，是C语言结构化编程的核心。</p>
+
+    <h4>4.1 函数概述</h4>
+    <p>函数是完成特定功能的独立程序模块，是C语言模块化编程的核心，可将复杂问题拆分为多个子问题逐一解决。</p>
+
+    <h5>4.1.1 函数的分类</h5>
+    <ul>
+      <li><p>库函数：由C语言系统提供，如<code>printf</code>、<code>scanf</code>，使用时需包含对应头文件（如<code>#include &lt;stdio.h&gt;</code>）。</p></li>
+      <li><p>自定义函数：用户根据需求自行定义，用于实现特定功能（如求面积、排序等）。</p></li>
+    </ul>
+
+    <h5>4.1.2 函数的核心规则</h5>
+    <ul>
+      <li><p>程序入口：一个完整C程序必须且仅包含一个<code>main</code>函数，程序从<code>main</code>函数开始执行。</p></li>
+      <li><p>不能嵌套定义：函数定义不能嵌套在另一个函数内部，需单独定义。</p></li>
+      <li><p>功能独立：每个函数应完成单一、明确的功能，增强代码可读性和复用性。</p></li>
+    </ul>
+
+    <h5>4.1.3 函数的作用</h5>
+    <ul>
+      <li><p>简化代码：避免重复编写相同逻辑，减少冗余。</p></li>
+      <li><p>便于维护：单个功能模块修改不影响其他部分。</p></li>
+      <li><p>拆分复杂问题：将大问题分解为小模块，降低编程难度。</p></li>
+    </ul>
+
+    <h4>4.2 函数的定义和调用</h4>
+    <p>函数的使用需遵循“先定义后调用”或“先声明后调用”的原则，核心包括定义格式、调用形式、参数传递和返回值处理。</p>
+
+    <h5>4.2.1 函数的定义</h5>
+    <p>函数定义分为“有返回值”和“无返回值”两种形式：</p>
+    <ol>
+      <li>
+        <p>有返回值函数（用于返回运算结果）：</p>
+        <div class="code-block">
+          函数类型 函数名(形参表) {
+          函数体（变量定义、执行语句）
+          return 表达式; // 返回值类型与函数类型一致
+          }
+        </div>
+        <p>示例：求圆盘面积</p>
+        <div class="code-block">
+          #include <stdio.h>
+          double c_area(double r) { // 函数类型为double，形参r为double型
+          return r * r * 3.1416; // 返回面积
+          }
+        </div>
+      </li>
+      <li>
+        <p>无返回值函数（仅执行操作，无返回结果）：</p>
+        <div class="code-block">
+          void 函数名(形参表) {
+          函数体
+          return; // 可省略，仅用于结束函数
+          }
+        </div>
+        <p>示例：打印圆盘面积</p>
+        <div class="code-block">
+          void pc_area(double r) { // void表示无返回值
+          printf("Radius:%f, area:%f\n", r, c_area(r));
+          }
+        </div>
+      </li>
+    </ol>
+
+    <h5>4.2.2 函数的调用</h5>
+    <ol>
+      <li>
+        <p>调用形式：</p>
+        <ul>
+          <li><p>作为语句：无返回值函数的调用（如<code>pc_area(3.24);</code>）。</p></li>
+          <li><p>作为表达式：有返回值函数的调用（如<code>double s = c_area(2.13);</code>）。</p></li>
+          <li><p>作为实参：函数调用作为其他函数的参数（如<code>printf("%f", c_area(0.865));</code>）。</p></li>
+        </ul>
+      </li>
+      <li>
+        <p>参数传递：</p>
+        <ul>
+          <li><p>形参：函数定义时的参数（如<code>c_area(double r)</code>中的<code>r</code>），仅在函数内有效。</p></li>
+          <li><p>实参：函数调用时的参数（如<code>c_area(3.24)</code>中的<code>3.24</code>），需与形参数量、类型、顺序一致。</p></li>
+          <li><p>传递规则：C语言采用“值传递”，实参值单向传递给形参，形参修改不影响实参。</p></li>
+        </ul>
+        <p>示例：参数传递的单向性</p>
+        <div class="code-block">
+          #include <stdio.h>
+          void exch(int x, int y) { // 形参x、y
+          int t = x; x = y; y = t; // 仅修改形参
+          }
+          int main() {
+          int a=2, b=5;
+          exch(a, b); // 实参a、b
+          printf("a=%d, b=%d\n", a, b); // 输出a=2, b=5，实参未变
+          return 0;
+          }
+        </div>
+      </li>
+      <li>
+        <p>函数返回值：</p>
+        <ul>
+          <li><p><code>return</code>语句用于返回结果，一个函数最多返回一个值。</p></li>
+          <li><p>主函数<code>main</code>的返回值：默认类型为<code>int</code>，返回0表示程序正常结束，非0表示出错。</p></li>
+        </ul>
+      </li>
+      <li>
+        <p>函数原型声明：</p>
+        <ul>
+          <li>
+            <p>若自定义函数在主调函数之后定义，需在调用前声明函数原型，格式：</p>
+            <div class="code-block">
+              函数类型 函数名(形参类型1, 形参类型2, ...); // 省略形参名也可
+            </div>
+            <p>示例：函数原型声明</p>
+          </li>
+        </ul>
+        <div class="code-block">
+          #include <stdio.h>
+          double c_area(double); // 函数原型声明（省略形参名）
+          int main() {
+          printf("Area:%f\n", c_area(3.24)); // 调用前已声明
+          return 0;
+          }
+          double c_area(double r) { // 函数定义在主函数之后
+          return r * r * 3.1416;
+          }
+        </div>
+      </li>
+    </ol>
+
+    <h4>4.3 函数的多级调用</h4>
+    <p>函数的多级调用包括“嵌套调用”（函数内调用其他函数）和“递归调用”（函数调用自身），用于解决复杂逻辑问题。</p>
+
+    <h5>4.3.1 嵌套调用</h5>
+    <ul>
+      <li><p>定义：一个函数调用另一个函数，被调用函数再调用第三个函数，形成层级调用。</p></li>
+      <li>
+        <p>示例：弦截法求方程根（<code>main</code>调用<code>root</code>，<code>root</code>调用<code>xpoint</code>，<code>xpoint</code>调用<code>f</code>）</p>
+        <div class="code-block">
+          #include <stdio.h>
+          #include <math.h>
+          double f(double x) { // 计算方程值
+          return x*x*x - 5*x*x + 16*x - 80;
+          }
+          double xpoint(double x1, double x2) { // 求弦与x轴交点
+          return (x1*f(x2) - x2*f(x1))/(f(x2)-f(x1));
+          }
+          double root(double x1, double x2) { // 求方程根
+          double x = xpoint(x1, x2);
+          while (fabs(f(x)) >= 1e-6) {
+          x = xpoint(x, x2);
+          }
+          return x;
+          }
+          int main() {
+          double x1=2, x2=5;
+          printf("方程的根：%f\n", root(x1, x2));
+          return 0;
+          }
+        </div>
+      </li>
+    </ul>
+
+    <h5>4.3.2 递归调用</h5>
+    <ul>
+      <li><p>定义：函数直接或间接调用自身，需满足“递归公式”和“终止条件”（避免死循环）。</p></li>
+      <li><p>核心条件：1. 递归公式（n与n-1的关系）；2. 终止条件（n=1或n=0时的基例）。</p></li>
+    </ul>
+    <ol>
+      <li>
+        <p>递归示例1：求n!（阶乘）</p>
+        <div class="code-block">
+          #include <stdio.h>
+          unsigned long fact(int n) {
+          if (n == 1) return 1; // 终止条件
+          else return n * fact(n-1); // 递归公式：n! = n*(n-1)!
+          }
+          int main() {
+          int x;
+          printf("请输入正整数：");
+          scanf("%d", &x);
+          printf("%d! = %ld\n", x, fact(x));
+          return 0;
+          }
+        </div>
+      </li>
+      <li>
+        <p>递归示例2：斐波那契数列第n项</p>
+        <div class="code-block">
+          #include <stdio.h>
+          long fibo(int n) {
+          if (n == 1 || n == 2) return 1; // 终止条件
+          else return fibo(n-1) + fibo(n-2); // 递归公式：f(n)=f(n-1)+f(n-2)
+          }
+          int main() {
+          int n;
+          scanf("%d", &n);
+          printf("第%d项：%ld\n", n, fibo(n));
+          return 0;
+          }
+        </div>
+      </li>
+      <li>
+        <p>递归示例3：汉诺塔问题</p>
+        <div class="code-block">
+          #include <stdio.h>
+          void moveone(char from, char to) { // 移动一个金盘
+          printf("%c -> %c\n", from, to);
+          }
+          void hanoi(int n, char from, char by, char to) {
+          if (n == 1) moveone(from, to); // 终止条件：1个金盘直接移动
+          else {
+          hanoi(n-1, from, to, by); // 把n-1个从from移到by
+          moveone(from, to); // 把第n个从from移到to
+          hanoi(n-1, by, from, to); // 把n-1个从by移到to
+          }
+          }
+          int main() {
+          hanoi(3, 'A', 'B', 'C'); // 3个金盘从A移到C，B为中间柱
+          return 0;
+          }
+        </div>
+      </li>
+    </ol>
+
+    <h4>4.4 变量与函数</h4>
+    <p>变量按“作用域”和“存储类别”分类，核心是明确变量的可用范围和生命周期。</p>
+
+    <h5>4.4.1 按作用域分类</h5>
+    <ol>
+      <li>
+        <p>局部变量：</p>
+        <ul>
+          <li><p>定义位置：函数内、复合语句内（包括形参）。</p></li>
+          <li><p>作用域：仅在定义它的函数或复合语句内有效。</p></li>
+          <li><p>特点：函数调用时分配内存，调用结束释放；未初始化时值随机。</p></li>
+        </ul>
+        <div class="code-block">
+          #include <stdio.h>
+          void func() {
+          int a = 10; // 局部变量，仅func内有效
+          printf("func内a：%d\n", a);
+          }
+          int main() {
+          func();
+          // printf("%d", a); // 错误：a是func的局部变量，主函数不可用
+          return 0;
+          }
+        </div>
+      </li>
+      <li>
+        <p>全局变量：</p>
+        <ul>
+          <li><p>定义位置：函数外部，不属于任一函数。</p></li>
+          <li><p>作用域：从定义处到源文件结束，可被多个函数访问。</p></li>
+          <li><p>特点：程序运行期间始终占用内存；未初始化时自动赋0；若与局部变量同名，局部变量优先。</p></li>
+        </ul>
+        <div class="code-block">
+          #include <stdio.h>
+          int a = 2; // 全局变量
+          void exch() {
+          a = 5; // 访问全局变量
+          }
+          int main() {
+          printf("修改前a：%d\n", a);
+          exch();
+          printf("修改后a：%d\n", a); // 输出5，全局变量被修改
+          return 0;
+          }
+        </div>
+      </li>
+    </ol>
+
+    <h5>4.4.2 按存储类别分类</h5>
+    <table>
+      <thead>
+      <tr>
+        <th>存储类别</th>
+        <th>关键字</th>
+        <th>存储区域</th>
+        <th>生命周期</th>
+        <th>特点</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td>自动变量</td>
+        <td>auto</td>
+        <td>动态存储区</td>
+        <td>函数调用期间</td>
+        <td>局部变量默认类型，未初始化值随机</td>
+      </tr>
+      <tr>
+        <td>静态变量</td>
+        <td>static</td>
+        <td>静态存储区</td>
+        <td>程序运行期间</td>
+        <td>局部静态变量初始化仅一次，值保留；全局静态变量仅本源文件可用</td>
+      </tr>
+      <tr>
+        <td>寄存器变量</td>
+        <td>register</td>
+        <td>寄存器</td>
+        <td>函数调用期间</td>
+        <td>频繁使用的局部变量，提高效率，不能取地址</td>
+      </tr>
+      <tr>
+        <td>外部变量</td>
+        <td>extern</td>
+        <td>静态存储区</td>
+        <td>程序运行期间</td>
+        <td>引用其他文件的全局变量</td>
+      </tr>
+      </tbody>
+    </table>
+    <p>示例：静态局部变量</p>
+    <div class="code-block">
+      #include <stdio.h>
+      void test() {
+      static int y = 20; // 静态局部变量，初始化仅一次
+      int x; // 自动变量，每次调用重新初始化
+      if (1) x = 10;
+      printf("auto:x=%d, static:y=%d\n", x, y++);
+      }
+      int main() {
+      test(); // 输出：auto:x=10, static:y=20
+      test(); // 输出：auto:x=随机值, static:y=21
+      return 0;
+      }
+    </div>
+
+    <h4>4.5 编译预处理</h4>
+    <p>编译预处理是编译前的预处理操作，以<code>#</code>开头，用于简化编程、提高代码通用性，包括文件包含、宏定义、条件编译。</p>
+
+    <h5>4.5.1 文件包含（#include）</h5>
+    <ul>
+      <li><p>功能：将指定文件内容嵌入当前源文件。</p></li>
+      <li>
+        <p>两种格式：</p>
+        <ol>
+          <li><code>#include &lt;文件名&gt;</code>：用于系统头文件（如<code>#include &lt;stdio.h&gt;</code>），从系统目录查找。</li>
+          <li><code>#include "文件名"</code>：用于自定义文件（如<code>#include "abc.h"</code>），先从当前目录查找，再查系统目录。</li>
+        </ol>
+      </li>
+      <li>
+        <p>示例：自定义头文件引用</p>
+        <div class="code-block">
+          // abc.h（头文件）
+          #define PI 3.14159
+          double c_area(double r); // 函数声明
+        </div>
+        <div class="code-block">
+          // abc.c（源文件）
+          #include "abc.h"
+          double c_area(double r) {
+          return PI * r * r; // 使用头文件中的宏定义
+          }
+        </div>
+      </li>
+    </ul>
+
+    <h5>4.5.2 宏定义（#define）</h5>
+    <ul>
+      <li><p>功能：定义宏名替代正文，实现文本替换（预处理阶段完成）。</p></li>
+    </ul>
+    <ol>
+      <li>
+        <p>简单宏定义：</p>
+        <div class="code-block">
+          #define 宏名 替代正文 // 无分号
+        </div>
+        <p>示例：</p>
+        <div class="code-block">
+          #include <stdio.h>
+          #define NUM 30 // 宏定义：NUM替代30
+          int main() {
+          printf("%d\n", NUM); // 预处理后替换为printf("%d\n", 30);
+          return 0;
+          }
+        </div>
+      </li>
+      <li>
+        <p>带参数宏定义：</p>
+        <div class="code-block">
+          #define 宏名(参数表) 替代正文 // 宏名与括号间无空格
+        </div>
+        <p>示例：求两数最小值</p>
+        <div class="code-block">
+          #include <stdio.h>
+          #define min(A,B) ((A)<(B)?(A):(B)) // 加括号避免优先级问题
+          int main() {
+          int x=5, y=3;
+          printf("最小值：%d\n", min(x+y, x*y)); // 替换为((5+3)<(5*3)?(5+3):(5*3))
+          return 0;
+          }
+        </div>
+        <p>注意：带参数宏是文本替换，非函数调用，需避免优先级陷阱（加括号）。</p>
+      </li>
+    </ol>
+
+    <h5>4.5.3 条件编译（#if...#else...#endif）</h5>
+    <ul>
+      <li>
+        <p>功能：按条件选择性编译代码，用于程序移植、调试。</p>
+      </li>
+      <li>
+        <p>格式：</p>
+        <div class="code-block">
+          #if 条件表达式
+          代码段1 // 条件为真时编译
+          #else
+          代码段2 // 条件为假时编译
+          #endif
+        </div>
+        <p>示例：</p>
+        <div class="code-block">
+          #include <stdio.h>
+          #define DEBUG 1 // 调试模式开启
+          int main() {
+          int a=10;
+          #if DEBUG
+          printf("调试信息：a=%d\n", a); // 调试模式下编译
+          #else
+          printf("a的值\n"); // 非调试模式下编译
+          #endif
+          return 0;
+          }
+        </div>
+      </li>
+    </ul>
+
+    <!-- 章节导航按钮 -->
+    <div class="chapter-nav">
+      <a href="Chap3.html" class="chapter-btn">上一章</a>
+      <a href="../../c_lang.html" class="chapter-btn catalog-btn">返回目录</a>
+      <a href="Chap5.html" class="chapter-btn">下一章</a>
+    </div>
+  </section>
+
+  <!-- 页脚 -->
+  <footer>
+    © 2026 kayiwen - C语言学习笔记 | 持续更新中
+  </footer>
+</main>
+
+<!-- 子菜单展开/折叠脚本 -->
+<script>
+  const notesTrigger = document.getElementById('notes-trigger');
+  const notesSubmenu = document.getElementById('notes-submenu');
+
+  notesTrigger.addEventListener('click', (e) => {
+      e.preventDefault();
+      notesSubmenu.classList.toggle('submenu-open');
+  });
+</script>
+</body>
+</html>

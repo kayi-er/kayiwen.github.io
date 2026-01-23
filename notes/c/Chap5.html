@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chap5 构造数据类型 - C语言学习笔记</title>
+  <style>
+    /* 全局样式重置 */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        scroll-behavior: smooth; /* 平滑滚动锚点 */
+    }
+
+    /* 页面背景和基础样式 */
+    body {
+        background-color: #f8f9fa;
+        color: #2c3e50;
+        line-height: 1.7;
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* 侧边栏样式 */
+    .sidebar {
+        width: 250px;
+        background-color: #2c3e50;
+        color: white;
+        padding: 2rem 1rem;
+        position: fixed;
+        height: 100vh;
+        box-shadow: 3px 0 8px rgba(0,0,0,0.15);
+        overflow-y: auto;
+        transition: all 0.3s ease;
+    }
+
+    /* 侧边栏头像/个人信息 */
+    .sidebar-profile {
+        text-align: center;
+        margin-bottom: 2.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(52, 152, 219, 0.3);
+    }
+
+    .sidebar-profile img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #3498db;
+        margin-bottom: 1rem;
+        box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
+    }
+
+    .sidebar-profile h2 {
+        font-size: 1.4rem;
+        margin-bottom: 0.5rem;
+        letter-spacing: 0.5px;
+    }
+
+    .sidebar-profile p {
+        color: #bdc3c7;
+        font-size: 0.9rem;
+    }
+
+    /* 侧边栏导航基础样式 */
+    .sidebar-nav {
+        list-style: none;
+    }
+
+    .sidebar-nav li {
+        margin-bottom: 0.8rem;
+    }
+
+    /* 主导航项 */
+    .nav-main-item {
+        color: white;
+        text-decoration: none;
+        display: block;
+        padding: 0.8rem 1rem;
+        border-radius: 6px;
+        transition: all 0.3s;
+        font-weight: 500;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .nav-main-item::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 4px;
+        height: 100%;
+        background-color: #3498db;
+        transform: scaleY(0);
+        transition: transform 0.3s;
+    }
+
+    .nav-main-item:hover,
+    .nav-main-item.active {
+        background-color: rgba(52, 152, 219, 0.2);
+        color: #3498db;
+    }
+
+    .nav-main-item:hover::before,
+    .nav-main-item.active::before {
+        transform: scaleY(1);
+    }
+
+    /* 学习笔记子菜单样式 */
+    .submenu {
+        list-style: none;
+        margin-left: 1rem;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease-in-out;
+    }
+
+    .submenu-open {
+        max-height: 500px;
+    }
+
+    .submenu li {
+        margin-bottom: 0.5rem;
+    }
+
+    .submenu a {
+        color: #bdc3c7;
+        text-decoration: none;
+        display: block;
+        padding: 0.6rem 1rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+    }
+
+    .submenu a:hover {
+        background-color: #34495e;
+        color: #3498db;
+        padding-left: 1.2rem;
+    }
+
+    /* 侧边栏底部联系方式 */
+    .sidebar-contact {
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(52, 152, 219, 0.3);
+    }
+
+    .sidebar-contact a {
+        color: #bdc3c7;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+    }
+
+    .sidebar-contact a:hover {
+        color: #3498db;
+        transform: translateX(5px);
+    }
+
+    .sidebar-contact i {
+        margin-right: 0.8rem;
+        font-size: 1.1rem;
+        width: 18px;
+        text-align: center;
+    }
+
+    /* 主内容区域 */
+    .main-content {
+        flex: 1;
+        margin-left: 250px;
+        padding: 2rem 3rem;
+        background-color: #f8f9fa;
+    }
+
+    /* 内容卡片样式 */
+    .content-card {
+        background: white;
+        padding: 2.5rem 3rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        margin-bottom: 2.5rem;
+        border-top: 4px solid #3498db;
+    }
+
+    /* 标题样式层级 */
+    .content-card h2 {
+        color: #2c3e50;
+        margin-bottom: 2rem;
+        border-bottom: 3px solid #3498db;
+        padding-bottom: 0.8rem;
+        font-size: 1.8rem;
+        letter-spacing: 1px;
+    }
+
+    .content-card h3 {
+        color: #2c3e50;
+        margin: 2rem 0 1.2rem;
+        font-size: 1.4rem;
+        position: relative;
+        padding-left: 1rem;
+    }
+
+    .content-card h3::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 50%;
+        width: 4px;
+        height: 1.2rem;
+        background-color: #3498db;
+        transform: translateY(-50%);
+    }
+
+    .content-card h4 {
+        color: #3498db;
+        margin: 1.5rem 0 0.8rem;
+        font-size: 1.2rem;
+    }
+
+    .content-card h5 {
+        color: #2980b9;
+        margin: 1.2rem 0 0.6rem;
+        font-size: 1.1rem;
+        padding-left: 0.8rem;
+        border-left: 3px solid #3498db;
+    }
+
+    /* 段落样式 */
+    .content-card p {
+        margin-bottom: 1.2rem;
+        line-height: 1.8;
+        text-align: justify;
+    }
+
+    /* 列表样式 */
+    .content-card ul, .content-card ol {
+        margin-left: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .content-card ul li, .content-card ol li {
+        margin-bottom: 0.6rem;
+        line-height: 1.8;
+    }
+
+    /* 代码块样式 */
+    .code-block {
+        background-color: #2d2d2d;
+        color: #f8f8f2;
+        padding: 1.2rem 1.5rem;
+        border-radius: 8px;
+        margin: 1.5rem 0;
+        overflow-x: auto;
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-size: 0.95rem;
+        line-height: 1.8;
+        white-space: pre;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    /* 代码块滚动条优化 */
+    .code-block::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .code-block::-webkit-scrollbar-thumb {
+        background-color: #3498db;
+        border-radius: 4px;
+    }
+
+    /* 表格样式美化 */
+    .content-card table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.5rem 0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .content-card th, .content-card td {
+        padding: 0.8rem 1rem;
+        text-align: left;
+        border: 1px solid #ecf0f1;
+    }
+
+    .content-card th {
+        background-color: #3498db;
+        color: white;
+        font-weight: 500;
+    }
+
+    .content-card tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+
+    .content-card tr:hover {
+        background-color: #e8f4fd;
+    }
+
+    /* 章节导航按钮容器 */
+    .chapter-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #ecf0f1;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    /* 章节跳转按钮通用样式 */
+    .chapter-btn {
+        display: inline-block;
+        padding: 0.8rem 1.8rem;
+        background-color: #3498db;
+        color: white !important;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+    }
+
+    /* 禁用状态 */
+    .chapter-btn.disabled {
+        background-color: #bdc3c7;
+        cursor: not-allowed;
+        box-shadow: none;
+        pointer-events: none;
+    }
+
+    /* 悬停效果 */
+    .chapter-btn:not(.disabled):hover {
+        background-color: #2980b9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    }
+
+    /* 目录按钮特殊样式 */
+    .chapter-btn.catalog-btn {
+        background-color: #2c3e50;
+    }
+
+    .chapter-btn.catalog-btn:hover {
+        background-color: #1a2530;
+    }
+
+    /* 页脚样式 */
+    footer {
+        text-align: center;
+        color: #7f8c8d;
+        padding: 2rem;
+        margin-top: 3rem;
+        font-size: 0.9rem;
+        border-top: 1px solid #ecf0f1;
+    }
+
+    /* 移动端响应式适配 */
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            height: auto;
+            position: relative;
+            padding: 1.5rem;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+
+        .main-content {
+            margin-left: 0;
+            padding: 1.5rem 1rem;
+        }
+
+        .sidebar-profile {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+        }
+
+        .sidebar-profile img {
+            width: 80px;
+            height: 80px;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-wrap: wrap;
+            overflow-x: auto;
+            gap: 0.8rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 0;
+        }
+
+        .submenu {
+            display: none;
+        }
+
+        .sidebar-contact {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+        }
+
+        .sidebar-contact a {
+            margin-bottom: 0;
+        }
+
+        .content-card {
+            padding: 1.5rem 1rem;
+            border-radius: 8px;
+        }
+
+        .content-card h2 {
+            font-size: 1.5rem;
+        }
+
+        .content-card h3 {
+            font-size: 1.3rem;
+        }
+
+        .content-card h4 {
+            font-size: 1.1rem;
+        }
+
+        .content-card h5 {
+            font-size: 1.05rem;
+        }
+
+        .code-block {
+            font-size: 0.85rem;
+            padding: 1rem;
+            line-height: 1.7;
+        }
+
+        /* 移动端表格适配 */
+        .content-card table {
+            display: block;
+            overflow-x: auto;
+        }
+
+        .chapter-nav {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .chapter-btn {
+            width: 100%;
+            text-align: center;
+            padding: 0.7rem 1rem;
+        }
+    }
+  </style>
+  <!-- 引入图标库 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<!-- 侧边栏 -->
+<aside class="sidebar">
+  <div class="sidebar-profile">
+    <img src="../../images/avatar.jpg" alt="个人头像">
+    <h2>kayiwen</h2>
+    <p> BJTU-CS | 持续学习中 </p>
+  </div>
+
+  <!-- 侧边栏导航 -->
+  <ul class="sidebar-nav">
+    <li><a href="../../index.html#profile" class="nav-main-item">个人简介</a></li>
+    <li>
+      <a href="../../index.html#notes" class="nav-main-item active" id="notes-trigger">学习笔记</a>
+      <ul class="submenu submenu-open" id="notes-submenu">
+        <li><a href="../../c_lang.html" style="color: #3498db; background-color: #34495e;">C语言</a></li>
+        <li><a href="../../c_plus.html">C++</a></li>
+        <li><a href="../../python.html">Python</a></li>
+        <li><a href="../../html_css.html">HTML/CSS</a></li>
+      </ul>
+    </li>
+    <li><a href="../../index.html#inspiration" class="nav-main-item">灵感记录</a></li>
+    <li><a href="../../index.html#contact" class="nav-main-item">联系方式</a></li>
+  </ul>
+
+  <!-- 侧边栏联系方式 -->
+  <div class="sidebar-contact">
+    <a href="mailto:kayiwen@outlook.com">
+      <i class="fas fa-envelope"></i> kayiwen@outlook.com
+    </a>
+    <a href="https://github.com/kayi-er" target="_blank">
+      <i class="fab fa-github"></i> github.com/kayi-er
+    </a>
+    <a href="https://www.xiaohongshu.com/user/profile/5cd20855000000001203775f" target="_blank">
+      <i class="fab fa-xiaohongshu"></i> 小红书@kayiii
+    </a>
+    <a href="#" target="_blank">
+      <i class="fab fa-weixin"></i> 公众号：九无清酒
+    </a>
+  </div>
+</aside>
+
+<!-- 章节主体内容 -->
+<main class="main-content">
+  <section class="content-card">
+    <h2>Chap5 构造数据类型</h2>
+
+    <h3>Chap5 构造数据类型</h3>
+    <p>核心结论：本章聚焦C语言构造数据类型的应用，涵盖数组（一维、二维、字符数组）和结构体类型两大核心，详解其定义、初始化、引用规则、内存存储特性及实际应用（排序、矩阵操作、字符串处理、数据封装），是处理批量数据和复杂结构化数据的核心基础。</p>
+
+    <h4>5.1 数组概述</h4>
+    <p>数组是由<strong>相同数据类型</strong>的元素按<strong>有序排列</strong>组成的构造类型，用于存储批量同类数据，解决单个变量无法高效处理多数据的问题。</p>
+
+    <h5>核心特点</h5>
+    <ul>
+      <li>元素类型一致：所有元素的数据类型相同，占用内存大小一致。</li>
+      <li>存储连续：元素在内存中占用连续存储空间，数组名代表首元素地址（地址常量）。</li>
+      <li>下标访问：通过“数组名[下标]”访问元素，下标从0开始计数。</li>
+      <li>用途：存储批量数据（如学生成绩、矩阵元素、字符串），方便批量处理。</li>
+    </ul>
+
+    <h5>数组分类</h5>
+    <ul>
+      <li>按维度：一维数组（线性数据）、二维数组（矩阵数据）、多维数组。</li>
+      <li>按元素类型：数值数组（int、float）、字符数组（char）、结构体数组等。</li>
+    </ul>
+
+    <hr />
+    <p>&nbsp;</p>
+
+    <h4>5.2 一维数组</h4>
+    <p>一维数组是最基础的数组形式，用于存储线性排列的批量数据。</p>
+
+    <h5>5.2.1 定义格式</h5>
+    <div class="code-block">
+      类型说明符 数组名[常量表达式];
+    </div>
+    <ul>
+      <li><p>类型说明符：指定数组元素的数据类型（int、float、char等）。</p></li>
+      <li><p>数组名：符合标识符规则，代表数组首地址。</p></li>
+      <li><p>常量表达式：指定数组元素个数（必须为非负常量，不能是变量）。</p></li>
+      <li><p>示例：</p>
+        <div class="code-block">
+          int a[5];      // 5个int型元素的一维数组
+          char c[20];    // 20个char型元素的一维数组
+          float x[10];    // 10个float型元素的一维数组
+        </div>
+      </li>
+    </ul>
+
+    <h5>5.2.2 初始化方式</h5>
+    <p>一维数组初始化有4种常见形式，未初始化的自动变量元素值随机，静态数组自动赋0：</p>
+    <ol>
+      <li><p>全量初始化：指定所有元素值</p>
+        <div class="code-block">
+          int a[5] = {1, 2, 3, 4, 5}; // a[0]=1, a[1]=2, ..., a[4]=5
+        </div>
+      </li>
+      <li><p>部分初始化：未指定的元素自动赋0</p>
+        <div class="code-block">
+          int a[5] = {1, 0, 1}; // a[0]=1, a[1]=0, a[2]=1, a[3]=0, a[4]=0
+        </div>
+      </li>
+      <li><p>省略数组长度：由初始化元素个数自动确定长度</p>
+        <div class="code-block">
+          int b[] = {1, 2, 3}; // 数组长度为3，b[0]=1, b[1]=2, b[2]=3
+        </div>
+      </li>
+      <li><p>静态数组初始化：静态存储区数组自动赋0</p>
+        <div class="code-block">
+          static int a[5]; // 所有元素均为0
+        </div>
+      </li>
+    </ol>
+
+    <h5>5.2.3 元素引用规则</h5>
+    <ul>
+      <li><p>引用格式：<code>数组名[下标]</code>，下标范围为<code>0 ~ 数组长度-1</code>（超出范围会数组越界）。</p></li>
+      <li><p>示例：</p>
+        <div class="code-block">
+          int a[5] = {1,2,3,4,5};
+          printf("%d", a[2]); // 输出3（引用第3个元素）
+          a[3] = 10;          // 修改第4个元素值为10
+        </div>
+      </li>
+      <li><p>注意：不能直接引用整个数组（如<code>printf("%d", a)</code>），需逐个元素操作。</p></li>
+    </ul>
+
+    <h5>5.2.4 输入输出</h5>
+    <p>通过循环逐个读写元素，示例：</p>
+    <div class="code-block">
+      #include <stdio.h>
+      int main() {
+      int a[10], i;
+      // 输入
+      printf("请输入10个整数：");
+      for (i = 0; i < 10; i++) {
+      scanf("%d", &a[i]); // 注意取地址符&
+      }
+      // 输出
+      printf("输出结果：");
+      for (i = 0; i < 10; i++) {
+      printf("%4d", a[i]);
+      }
+      printf("\n");
+      return 0;
+      }
+    </div>
+
+    <h5>5.2.5 应用举例</h5>
+    <ol>
+      <li><p>冒泡排序（从小到大）</p>
+        <div class="code-block">
+          #include <stdio.h>
+          #define N 5
+          int main() {
+          int a[N], i, j, med;
+          // 输入数据
+          printf("请输入%d个整数：", N);
+          for (i = 0; i < N; i++) {
+          scanf("%d", &a[i]);
+          }
+          // 冒泡排序
+          for (i = 1; i < N; i++) { // 控制轮数（N-1轮）
+          for (j = 0; j < N - i; j++) { // 每轮比较次数
+          if (a[j] > a[j+1]) { // 相邻元素比较，大的后移
+          med = a[j];
+          a[j] = a[j+1];
+          a[j+1] = med;
+          }
+          }
+          }
+          // 输出结果
+          printf("排序后：");
+          for (i = 0; i < N; i++) {
+          printf("%4d", a[i]);
+          }
+          return 0;
+          }
+        </div>
+      </li>
+      <li><p>选择排序（从小到大）</p>
+        <div class="code-block">
+          #include <stdio.h>
+          #define N 7
+          int main() {
+          int a[N], i, j, med;
+          printf("请输入%d个整数：", N);
+          for (i = 0; i < N; i++) {
+          scanf("%d", &a[i]);
+          }
+          // 选择排序
+          for (i = 0; i < N - 1; i++) { // 控制选择轮数（N-1轮）
+          for (j = i + 1; j < N; j++) { // 从剩余元素中找最小值
+          if (a[j] < a[i]) { // 最小值交换到当前位置
+          med = a[i];
+          a[i] = a[j];
+          a[j] = med;
+          }
+          }
+          }
+          printf("排序后：");
+          for (i = 0; i < N; i++) {
+          printf("%6d", a[i]);
+          }
+          return 0;
+          }
+        </div>
+      </li>
+    </ol>
+
+    <hr />
+    <p>&nbsp;</p>
+
+    <h4>5.3 二维数组</h4>
+    <p>二维数组用于存储矩阵形式的数据（行×列），本质是“数组的数组”（每个元素是一维数组）。</p>
+
+    <h5>5.3.1 定义格式</h5>
+    <div class="code-block">
+      类型说明符 数组名[行数][列数];
+    </div>
+    <ul>
+      <li><p>行数：二维数组的行数（可省略，由初始化自动推导）。</p></li>
+      <li><p>列数：二维数组的列数（不可省略）。</p></li>
+      <li><p>示例：</p>
+        <div class="code-block">
+          float a[5][4];  // 5行4列的float型二维数组
+          int b[3][6];    // 3行6列的int型二维数组
+          char str[30][20];// 30行20列的char型二维数组（存储30个字符串）
+        </div>
+      </li>
+    </ul>
+
+    <h5>5.3.2 内存存储规则</h5>
+    <ul>
+      <li>行优先存储：元素按“先存第0行，再存第1行……”的顺序连续存储。</li>
+      <li>示例（<code>int a[2][3]</code>）：
+        内存顺序为：a[0][0] → a[0][1] → a[0][2] → a[1][0] → a[1][1] → a[1][2]</li>
+      <li>地址表示：<code>a[i][j]</code> 等价于 <code>*(a[i] + j)</code> 或 <code>*(*(a + i) + j)</code>（a为行地址，a[i]为首元素地址）。</li>
+    </ul>
+
+    <h5>5.3.3 初始化方式</h5>
+    <ol>
+      <li><p>分行初始化（推荐，清晰直观）</p>
+        <div class="code-block">
+          int a[2][3] = {{1,2,3}, {4,5,6}}; // 全量初始化
+          int b[2][3] = {{1,2}, {4}};      // 部分初始化，未赋值元素为0
+          int c[][3] = {{1}, {4,5}};       // 省略行数，自动推导为2行
+        </div>
+      </li>
+      <li><p>按存储顺序初始化（不推荐，可读性差）</p>
+        <div class="code-block">
+          int a[2][3] = {1,2,3,4,5,6};    // 等价于分行初始化
+          int b[][3] = {1,2,3,4,5};      // 自动推导为2行，b[1][2]=0
+        </div>
+      </li>
+    </ol>
+
+    <h5>5.3.4 元素引用</h5>
+    <ul>
+      <li><p>格式：<code>数组名[行下标][列下标]</code>，行、列下标均从0开始。</p></li>
+      <li><p>示例：</p>
+        <div class="code-block">
+          int a[3][4] = {{1,2,3,4}, {5,6,7,8}, {9,10,11,12}};
+          printf("%d", a[1][2]); // 输出7（第2行第3列元素）
+          a[2][3] = 15;          // 修改第3行第4列元素为15
+        </div>
+      </li>
+    </ul>
+
+    <h5>5.3.5 输入输出</h5>
+    <p>通过双重循环实现，外循环控制行，内循环控制列：</p>
+    <div class="code-block">
+      #include <stdio.h>
+      int main() {
+      int b[3][2], i, j;
+      // 输入
+      printf("请输入3行2列数据：\n");
+      for (i = 0; i < 3; i++) {
+      for (j = 0; j < 2; j++) {
+      scanf("%d", &b[i][j]);
+      }
+      }
+      // 输出
+      printf("输出矩阵：\n");
+      for (i = 0; i < 3; i++) {
+      for (j = 0; j < 2; j++) {
+      printf("b[%d][%d] = %d ", i, j, b[i][j]);
+      }
+      printf("\n"); // 换行
+      }
+      return 0;
+      }
+    </div>
+
+    <h5>5.3.6 应用举例</h5>
+    <ol>
+      <li><p>两3×4矩阵求和</p>
+        <div class="code-block">
+          #include <stdio.h>
+          int main() {
+          int a[3][4], b[3][4], c[3][4], i, j;
+          // 输入矩阵a
+          printf("请输入a矩阵元素：\n");
+          for (i = 0; i < 3; i++) {
+          for (j = 0; j < 4; j++) {
+          scanf("%d", &a[i][j]);
+          }
+          }
+          // 输入矩阵b
+          printf("请输入b矩阵元素：\n");
+          for (i = 0; i < 3; i++) {
+          for (j = 0; j < 4; j++) {
+          scanf("%d", &b[i][j]);
+          }
+          }
+          // 矩阵求和
+          for (i = 0; i < 3; i++) {
+          for (j = 0; j < 4; j++) {
+          c[i][j] = a[i][j] + b[i][j];
+          }
+          }
+          // 输出结果
+          printf("a矩阵：\n");
+          for (i = 0; i < 3; i++) {
+          for (j = 0; j < 4; j++) {
+          printf("%5d", a[i][j]);
+          }
+          printf("\n");
+          }
+          printf("b矩阵：\n");
+          for (i = 0; i < 3; i++) {
+          for (j = 0; j < 4; j++) {
+          printf("%5d", b[i][j]);
+          }
+          printf("\n");
+          }
+          printf("和矩阵：\n");
+          for (i = 0; i < 3; i++) {
+          for (j = 0; j < 4; j++) {
+          printf("%5d", c[i][j]);
+          }
+          printf("\n");
+          }
+          return 0;
+          }
+        </div>
+      </li>
+      <li><p>4×3矩阵转置（转为3×4矩阵）</p>
+        <div class="code-block">
+          #include <stdio.h>
+          int main() {
+          int a[4][3], b[3][4], i, j;
+          // 输入原矩阵a
+          printf("请输入4行3列矩阵A：\n");
+          for (i = 0; i < 4; i++) {
+          for (j = 0; j < 3; j++) {
+          scanf("%d", &a[i][j]);
+          }
+          }
+          // 转置：b[j][i] = a[i][j]
+          for (i = 0; i < 4; i++) {
+          for (j = 0; j < 3; j++) {
+          b[j][i] = a[i][j];
+          }
+          }
+          // 输出原矩阵
+          printf("原矩阵A：\n");
+          for (i = 0; i < 4; i++) {
+          for (j = 0; j < 3; j++) {
+          printf("%6d", a[i][j]);
+          }
+          printf("\n");
+          }
+          // 输出转置矩阵
+          printf("转置矩阵B：\n");
+          for (i = 0; i < 3; i++) {
+          for (j = 0; j < 4; j++) {
+          printf("%6d", b[i][j]);
+          }
+          printf("\n");
+          }
+          return 0;
+          }
+        </div>
+      </li>
+      <li><p>求3×4矩阵最大值（函数实现）</p>
+        <div class="code-block">
+          #include <stdio.h>
+          float largest(float a[][4]) { // 列数不可省略
+          float max = a[0][0];
+          int i, j;
+          for (i = 0; i < 3; i++) {
+          for (j = 0; j < 4; j++) {
+          if (a[i][j] > max) {
+          max = a[i][j];
+          }
+          }
+          }
+          return max;
+          }
+          int main() {
+          float a[3][4], max;
+          int i, j;
+          printf("请输入3行4列矩阵：\n");
+          for (i = 0; i < 3; i++) {
+          for (j = 0; j < 4; j++) {
+          scanf("%f", &a[i][j]);
+          }
+          }
+          max = largest(a);
+          printf("最大值：%f\n", max);
+          return 0;
+          }
+        </div>
+      </li>
+    </ol>
+
+    <hr />
+    <p>&nbsp;</p>
+
+    <h4>5.4 字符数组</h4>
+    <p>字符数组用于存储字符或字符串，字符串以<code>'\0'</code>（ASCII码0）作为结束标志。</p>
+
+    <h5>5.4.1 定义格式</h5>
+    <div class="code-block">
+      char 数组名[长度]; // 一维字符数组
+      char 数组名[行数][列数]; // 二维字符数组（存储多个字符串）
+    </div>
+    <ul>
+      <li><p>示例：</p>
+        <div class="code-block">
+          char str[20];      // 存储单个字符串（最多19个有效字符+1个'\0'）
+          char name[30][20]; // 存储30个字符串，每个字符串最多19个字符
+        </div>
+      </li>
+    </ul>
+
+    <h5>5.4.2 初始化方式</h5>
+    <ol>
+      <li><p>逐个字符初始化（无<code>'\0'</code>，需手动添加）</p>
+        <div class="code-block">
+          char str[4] = {'w', 'e', 'i', 'j'}; // 无结束符，不是字符串
+          char str[5] = {'G', 'o', 'o', 'd', '\0'}; // 手动添加结束符
+        </div>
+      </li>
+      <li><p>字符串常量初始化（自动添加<code>'\0'</code>）</p>
+        <div class="code-block">
+          char str[] = "Good"; // 长度自动为5（4个有效字符+1个'\0'）
+          char str[8] = "welcome"; // 等价于{'w','e','l','c','o','m','e','\0'}
+        </div>
+      </li>
+    </ol>
+
+    <h5>5.4.3 字符串的输入输出</h5>
+    <ol>
+      <li><p>逐个字符读写（用<code>%c</code>）</p>
+        <div class="code-block">
+          #include <stdio.h>
+          int main() {
+          char a[3];
+          int i;
+          // 输入
+          for (i = 0; i < 3; i++) {
+          scanf("%c", &a[i]);
+          }
+          // 输出
+          for (i = 0; i < 3; i++) {
+          printf("%c", a[i]);
+          }
+          return 0;
+          }
+        </div>
+      </li>
+      <li><p>整体读写（用<code>%s</code>，自动识别<code>'\0'</code>）</p>
+        <div class="code-block">
+          #include <stdio.h>
+          int main() {
+          char c[10];
+          scanf("%s", c); // 输入时遇空格、换行结束，无需&（数组名是地址）
+          printf("%s", c); // 输出时遇'\0'结束
+          return 0;
+          }
+        </div>
+      </li>
+    </ol>
+    <ul>
+      <li>注意：<code>scanf("%s")</code>无法读取带空格的字符串，需用<code>fgets</code>或<code>scanf("%[^\n]", str)</code>。</li>
+    </ul>
+
+    <h5>5.4.4 常用字符串处理函数（需包含<code><string.h></code>）</h5>
+    <table>
+      <thead>
+      <tr><th>函数名</th><th>功能描述</th><th>示例</th></tr></thead>
+      <tbody>
+      <tr><td><code>strlen(s)</code></td><td>求字符串长度（不含<code>'\0'</code>）</td><td><code>strlen("Good") → 4</code></td></tr>
+      <tr><td><code>strcpy(s1,s2)</code></td><td>将s2复制到s1（s1需足够大）</td><td><code>strcpy(str1, "Hello")</code></td></tr>
+      <tr><td><code>strcmp(s1,s2)</code></td><td>比较s1和s2（ASCII码顺序），返回0（相等）、正数（s1大）、负数（s2大）</td><td><code>strcmp("abc", "abd") → -1</code></td></tr>
+      <tr><td><code>strcat(s1,s2)</code></td><td>将s2连接到s1末尾（s1需足够大）</td><td><code>strcat(str1, "World")</code></td></tr>
+      <tr><td><code>strlwr(s)</code></td><td>将s中大写字母转为小写</td><td><code>strlwr("ABC") → "abc"</code></td></tr>
+      <tr><td><code>strupr(s)</code></td><td>将s中小写字母转为大写</td><td><code>strupr("abc") → "ABC"</code></td></tr>
+      </tbody>
+    </table>
+    <ul>
+      <li><p>示例：字符串比较与连接</p>
+        <div class="code-block">
+          #include <stdio.h>
+          #include <string.h>
+          int main() {
+          char str1[20] = "Hello", str2[10] = "World";
+          printf("长度：%d\n", strlen(str1)); // 输出5
+          strcat(str1, str2);
+          printf("连接后：%s\n", str1); // 输出HelloWorld
+          if (strcmp(str1, "HelloWorld") == 0) {
+          printf("相等\n");
+          }
+          return 0;
+          }
+        </div>
+      </li>
+    </ul>
+
+    <h5>5.4.5 应用举例：统计字符串中字母、数字、空格个数</h5>
+    <div class="code-block">
+      #include <stdio.h>
+      #include <string.h>
+      int main() {
+      char str[80];
+      int letter = 0, digit = 0, blank = 0, others = 0, i;
+      printf("请输入一行字符：\n");
+      gets(str); // 读取带空格的字符串（或用fgets(str,80,stdin)）
+      for (i = 0; str[i] != '\0'; i++) {
+      if ((str[i] >= 'A' && str[i] <= 'Z') || (str[i] >= 'a' && str[i] <= 'z')) {
+      letter++;
+      } else if (str[i] >= '0' && str[i] <= '9') {
+      digit++;
+      } else if (str[i] == ' ') {
+      blank++;
+      } else {
+      others++;
+      }
+      }
+      printf("字母：%d，数字：%d，空格：%d，其他：%d\n", letter, digit, blank, others);
+      return 0;
+      }
+    </div>
+
+    <hr />
+    <p>&nbsp;</p>
+
+    <h4>5.5 结构体类型</h4>
+    <p>结构体用于封装不同类型的数据（如学生信息：学号、姓名、成绩），形成一个整体。</p>
+
+    <h5>5.5.1 结构体类型定义</h5>
+    <p>三种定义方式：</p>
+    <ol>
+      <li><p>先定义类型，再定义变量</p>
+        <div class="code-block">
+          struct student { // 结构体类型名：student
+          char number[10]; // 学号
+          char name[20];   // 姓名
+          char sex;        // 性别
+          int age;         // 年龄
+          float score[20]; // 成绩
+          char addr[30];   // 地址
+          };
+          struct student stud1, stud2; // 定义结构体变量stud1、stud2
+        </div>
+      </li>
+      <li><p>定义类型的同时定义变量</p>
+        <div class="code-block">
+          struct student {
+          char number[10];
+          char name[20];
+          char sex;
+          int age;
+          float score[20];
+          char addr[30];
+          } stud1, stud2; // 直接定义变量
+        </div>
+      </li>
+      <li><p>无名结构体（仅能定义一次变量）</p>
+        <div class="code-block">
+          struct {
+          char number[10];
+          char name[20];
+          char sex;
+          int age;
+          float score[20];
+          char addr[30];
+          } stud1, stud2; // 无类型名，后续无法再定义该类型变量
+        </div>
+      </li>
+    </ol>
+
+    <h5>5.5.2 结构体变量初始化</h5>
+    <p>按成员顺序赋值，字符串需用<code>""</code>，数值直接赋值：</p>
+    <div class="code-block">
+      struct student {
+      char number[10];
+      char name[20];
+      char sex;
+      int age;
+      float score;
+      } st1 = {"9708", "Liwei", 'F', 20, 95.5}; // 初始化
+    </div>
+
+    <h5>5.5.3 结构体成员引用</h5>
+    <ul>
+      <li><p>格式：<code>结构体变量名.成员名</code>（普通变量）、<code>结构体指针->成员名</code>（指针变量）</p></li>
+      <li><p>示例：</p>
+        <div class="code-block">
+          #include <stdio.h>
+          struct student {
+          char name[20];
+          int age;
+          float score;
+          } st1 = {"Zhang San", 20, 89.0}, *p = &st1; // 指针p指向st1
+          int main() {
+          printf("姓名：%s\n", st1.name);    // 直接引用：.
+          printf("年龄：%d\n", p->age);     // 指针引用：->
+          printf("成绩：%f\n", (*p).score); // 等价于p->score
+          return 0;
+          }
+        </div>
+      </li>
+    </ul>
+
+    <h5>5.5.4 结构体数组</h5>
+    <p>用于存储多个结构体变量（如多个学生信息）：</p>
+    <div class="code-block">
+      #include <stdio.h>
+      struct student {
+      long num;
+      char name[20];
+      float score;
+      } stud[3] = {
+      {9701, "Li Ming", 98.0},
+      {9702, "Wang Dan", 95.0},
+      {9703, "Li Hui", 80.0}
+      };
+      int main() {
+      int i;
+      for (i = 0; i < 3; i++) {
+      printf("学号：%ld，姓名：%s，成绩：%f\n", stud[i].num, stud[i].name, stud[i].score);
+      }
+      return 0;
+      }
+    </div>
+
+    <h5>5.5.5 应用举例：结构体作为函数参数（求学生成绩平均分）</h5>
+    <div class="code-block">
+      #include <stdio.h>
+      #define N 3
+      struct Score {
+      char name[20];
+      double chin, math, eng;
+      double mean;
+      };
+      // 计算平均分
+      void getMean(struct Score *p) {
+      p->mean = (p->chin + p->math + p->eng) / 3;
+      }
+      int main() {
+      struct Score stu[N];
+      int i;
+      // 输入成绩
+      for (i = 0; i < N; i++) {
+      printf("请输入第%d个学生信息（姓名 语文 数学 英语）：\n", i+1);
+      scanf("%s %lf %lf %lf", stu[i].name, &stu[i].chin, &stu[i].math, &stu[i].eng);
+      getMean(&stu[i]);
+      }
+      // 输出平均分≥80的学生
+      printf("平均分≥80的学生：\n");
+      for (i = 0; i < N; i++) {
+      if (stu[i].mean >= 80) {
+      printf("%s：%.2f\n", stu[i].name, stu[i].mean);
+      }
+      }
+      return 0;
+      }
+    </div>
+    <p>&nbsp;</p>
+
+    <!-- 章节导航按钮 -->
+    <div class="chapter-nav">
+      <a href="Chap4.html" class="chapter-btn">上一章</a>
+      <a href="../../c_lang.html" class="chapter-btn catalog-btn">返回目录</a>
+      <a href="Chap6.html" class="chapter-btn">下一章</a>
+    </div>
+  </section>
+
+  <!-- 页脚 -->
+  <footer>
+    © 2026 kayiwen - C语言学习笔记 | 持续更新中
+  </footer>
+</main>
+
+<!-- 子菜单展开/折叠脚本 -->
+<script>
+  const notesTrigger = document.getElementById('notes-trigger');
+  const notesSubmenu = document.getElementById('notes-submenu');
+
+  notesTrigger.addEventListener('click', (e) => {
+      e.preventDefault();
+      notesSubmenu.classList.toggle('submenu-open');
+  });
+</script>
+</body>
+</html>

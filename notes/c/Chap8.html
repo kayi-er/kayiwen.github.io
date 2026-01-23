@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chap8 结构体 - C语言学习笔记</title>
+    <style>
+        /* 全局样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            scroll-behavior: smooth; /* 平滑滚动锚点 */
+        }
+
+        /* 页面背景和基础样式 */
+        body {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+            line-height: 1.7;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 侧边栏样式 */
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 2rem 1rem;
+            position: fixed;
+            height: 100vh;
+            box-shadow: 3px 0 8px rgba(0,0,0,0.15);
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+
+        /* 侧边栏头像/个人信息 */
+        .sidebar-profile {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(52, 152, 219, 0.3);
+        }
+
+        .sidebar-profile img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #3498db;
+            margin-bottom: 1rem;
+            box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
+        }
+
+        .sidebar-profile h2 {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-profile p {
+            color: #bdc3c7;
+            font-size: 0.9rem;
+        }
+
+        /* 侧边栏导航基础样式 */
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 0.8rem;
+        }
+
+        /* 主导航项 */
+        .nav-main-item {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 0.8rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-main-item::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background-color: #3498db;
+            transform: scaleY(0);
+            transition: transform 0.3s;
+        }
+
+        .nav-main-item:hover,
+        .nav-main-item.active {
+            background-color: rgba(52, 152, 219, 0.2);
+            color: #3498db;
+        }
+
+        .nav-main-item:hover::before,
+        .nav-main-item.active::before {
+            transform: scaleY(1);
+        }
+
+        /* 学习笔记子菜单样式 */
+        .submenu {
+            list-style: none;
+            margin-left: 1rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-in-out;
+        }
+
+        .submenu-open {
+            max-height: 500px;
+        }
+
+        .submenu li {
+            margin-bottom: 0.5rem;
+        }
+
+        .submenu a {
+            color: #bdc3c7;
+            text-decoration: none;
+            display: block;
+            padding: 0.6rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .submenu a:hover {
+            background-color: #34495e;
+            color: #3498db;
+            padding-left: 1.2rem;
+        }
+
+        /* 侧边栏底部联系方式 */
+        .sidebar-contact {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(52, 152, 219, 0.3);
+        }
+
+        .sidebar-contact a {
+            color: #bdc3c7;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .sidebar-contact a:hover {
+            color: #3498db;
+            transform: translateX(5px);
+        }
+
+        .sidebar-contact i {
+            margin-right: 0.8rem;
+            font-size: 1.1rem;
+            width: 18px;
+            text-align: center;
+        }
+
+        /* 主内容区域 */
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 2rem 3rem;
+            background-color: #f8f9fa;
+        }
+
+        /* 内容卡片样式 */
+        .content-card {
+            background: white;
+            padding: 2.5rem 3rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 2.5rem;
+            border-top: 4px solid #3498db;
+        }
+
+        /* 标题样式层级 */
+        .content-card h2 {
+            color: #2c3e50;
+            margin-bottom: 2rem;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 0.8rem;
+            font-size: 1.8rem;
+            letter-spacing: 1px;
+        }
+
+        .content-card h3 {
+            color: #2c3e50;
+            margin: 2rem 0 1.2rem;
+            font-size: 1.4rem;
+            position: relative;
+            padding-left: 1rem;
+        }
+
+        .content-card h3::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 4px;
+            height: 1.2rem;
+            background-color: #3498db;
+            transform: translateY(-50%);
+        }
+
+        .content-card h4 {
+            color: #3498db;
+            margin: 1.5rem 0 0.8rem;
+            font-size: 1.2rem;
+        }
+
+        .content-card h5 {
+            color: #2980b9;
+            margin: 1.2rem 0 0.6rem;
+            font-size: 1.1rem;
+            padding-left: 0.8rem;
+            border-left: 3px solid #3498db;
+        }
+
+        /* 段落样式 */
+        .content-card p {
+            margin-bottom: 1.2rem;
+            line-height: 1.8;
+            text-align: justify;
+        }
+
+        /* 列表样式 */
+        .content-card ul, .content-card ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .content-card ul li, .content-card ol li {
+            margin-bottom: 0.6rem;
+            line-height: 1.8;
+        }
+
+        /* 代码块样式 */
+        .code-block {
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+            padding: 1.2rem 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.95rem;
+            line-height: 1.8;
+            white-space: pre;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* 代码块滚动条优化 */
+        .code-block::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .code-block::-webkit-scrollbar-thumb {
+            background-color: #3498db;
+            border-radius: 4px;
+        }
+
+        /* 表格样式美化 */
+        .content-card table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .content-card th, .content-card td {
+            padding: 0.8rem 1rem;
+            text-align: left;
+            border: 1px solid #ecf0f1;
+        }
+
+        .content-card th {
+            background-color: #3498db;
+            color: white;
+            font-weight: 500;
+        }
+
+        .content-card tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .content-card tr:hover {
+            background-color: #e8f4fd;
+        }
+
+        /* 章节导航按钮容器 */
+        .chapter-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #ecf0f1;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        /* 章节跳转按钮通用样式 */
+        .chapter-btn {
+            display: inline-block;
+            padding: 0.8rem 1.8rem;
+            background-color: #3498db;
+            color: white !important;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+        }
+
+        /* 禁用状态 */
+        .chapter-btn.disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+            box-shadow: none;
+            pointer-events: none;
+        }
+
+        /* 悬停效果 */
+        .chapter-btn:not(.disabled):hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+
+        /* 目录按钮特殊样式 */
+        .chapter-btn.catalog-btn {
+            background-color: #2c3e50;
+        }
+
+        .chapter-btn.catalog-btn:hover {
+            background-color: #1a2530;
+        }
+
+        /* 页脚样式 */
+        footer {
+            text-align: center;
+            color: #7f8c8d;
+            padding: 2rem;
+            margin-top: 3rem;
+            font-size: 0.9rem;
+            border-top: 1px solid #ecf0f1;
+        }
+
+        /* 移动端响应式适配 */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 1.5rem;
+                box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1.5rem 1rem;
+            }
+
+            .sidebar-profile {
+                margin-bottom: 1.5rem;
+                padding-bottom: 1rem;
+            }
+
+            .sidebar-profile img {
+                width: 80px;
+                height: 80px;
+            }
+
+            .sidebar-nav {
+                display: flex;
+                flex-wrap: wrap;
+                overflow-x: auto;
+                gap: 0.8rem;
+                padding-bottom: 0.5rem;
+            }
+
+            .sidebar-nav li {
+                margin-bottom: 0;
+            }
+
+            .submenu {
+                display: none;
+            }
+
+            .sidebar-contact {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 1rem;
+                margin-top: 1.5rem;
+                padding-top: 1rem;
+            }
+
+            .sidebar-contact a {
+                margin-bottom: 0;
+            }
+
+            .content-card {
+                padding: 1.5rem 1rem;
+                border-radius: 8px;
+            }
+
+            .content-card h2 {
+                font-size: 1.5rem;
+            }
+
+            .content-card h3 {
+                font-size: 1.3rem;
+            }
+
+            .content-card h4 {
+                font-size: 1.1rem;
+            }
+
+            .content-card h5 {
+                font-size: 1.05rem;
+            }
+
+            .code-block {
+                font-size: 0.85rem;
+                padding: 1rem;
+                line-height: 1.7;
+            }
+
+            /* 移动端表格适配 */
+            .content-card table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .chapter-nav {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .chapter-btn {
+                width: 100%;
+                text-align: center;
+                padding: 0.7rem 1rem;
+            }
+        }
+    </style>
+    <!-- 引入图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<!-- 侧边栏 -->
+<aside class="sidebar">
+    <div class="sidebar-profile">
+        <img src="../../images/avatar.jpg" alt="个人头像">
+        <h2>kayiwen</h2>
+        <p> BJTU-CS | 持续学习中 </p>
+    </div>
+
+    <!-- 侧边栏导航 -->
+    <ul class="sidebar-nav">
+        <li><a href="../../index.html#profile" class="nav-main-item">个人简介</a></li>
+        <li>
+            <a href="../../index.html#notes" class="nav-main-item active" id="notes-trigger">学习笔记</a>
+            <ul class="submenu submenu-open" id="notes-submenu">
+                <li><a href="../../c_lang.html" style="color: #3498db; background-color: #34495e;">C语言</a></li>
+                <li><a href="../../c_plus.html">C++</a></li>
+                <li><a href="../../python.html">Python</a></li>
+                <li><a href="../../html_css.html">HTML/CSS</a></li>
+            </ul>
+        </li>
+        <li><a href="../../index.html#inspiration" class="nav-main-item">灵感记录</a></li>
+        <li><a href="../../index.html#contact" class="nav-main-item">联系方式</a></li>
+    </ul>
+
+    <!-- 侧边栏联系方式 -->
+    <div class="sidebar-contact">
+        <a href="mailto:kayiwen@outlook.com">
+            <i class="fas fa-envelope"></i> kayiwen@outlook.com
+        </a>
+        <a href="https://github.com/kayi-er" target="_blank">
+            <i class="fab fa-github"></i> github.com/kayi-er
+        </a>
+        <a href="https://www.xiaohongshu.com/user/profile/5cd20855000000001203775f" target="_blank">
+            <i class="fab fa-xiaohongshu"></i> 小红书@kayiii
+        </a>
+        <a href="#" target="_blank">
+            <i class="fab fa-weixin"></i> 公众号：九无清酒
+        </a>
+    </div>
+</aside>
+
+<!-- 章节主体内容 -->
+<main class="main-content">
+    <section class="content-card">
+        <h2>Chap8 结构体</h2>
+
+        <h3>Chap8 结构体</h3>
+        <p>核心结论：本章聚焦C语言结构体的核心应用，涵盖结构体类型的定义、变量初始化与引用，结构体数组的使用，typedef类型别名定义，以及指针与结构体的深度结合（结构体指针、指针作为函数参数），是处理多类型关联数据（如学生信息、商品数据）的核心工具，也是实现复杂数据组织与模块化编程的关键知识点。</p>
+
+        <h4>8.1 结构体类型</h4>
+        <p>结构体是由不同类型成员组成的构造数据类型，核心用于描述具有多个关联属性的复杂对象（如学生、商品），其使用需掌握定义、初始化、引用及输入输出的完整流程。</p>
+
+        <h5>8.1.1 结构体概述</h5>
+        <ul>
+            <li><p>结构体的本质：将多个不同类型的数据（成员）封装为一个整体，描述“属性集合型”数据（如学生包含学号、姓名、成绩等属性）。</p>
+            </li>
+            <li><p>核心优势：解决单一基本类型无法描述复杂对象的问题，使数据组织更贴近实际场景。</p>
+            </li>
+            <li><p>结构体的一般格式：</p>
+                <div class="code-block">
+                    struct 结构体类型名 {
+                    类型标识符 成员名1;
+                    类型标识符 成员名2;
+                    // ... 其他成员
+                    };
+                </div>
+            </li>
+            <li><p>示例（学生信息结构体）：</p>
+                <div class="code-block">
+                    struct student {
+                    char number[10];  // 学号
+                    char name[20];    // 姓名
+                    char sex;         // 性别
+                    int age;          // 年龄
+                    float score[20];  // 成绩
+                    char addr[30];    // 地址
+                    };
+                </div>
+            </li>
+        </ul>
+
+        <h5>8.1.2 结构体类型与变量的定义</h5>
+        <p>三种核心定义形式，按需选择使用：</p>
+        <ol>
+            <li><p>形式一：先定义结构体类型，再定义变量</p>
+                <div class="code-block">
+                    // 先定义类型
+                    struct student {
+                    char name[20];
+                    int age;
+                    float score;
+                    };
+                    // 再定义变量
+                    struct student stud1, stud2;
+                </div>
+            </li>
+            <li><p>形式二：定义类型的同时定义变量</p>
+                <div class="code-block">
+                    struct student {
+                    char name[20];
+                    int age;
+                    float score;
+                    } stud1, stud2;  // 直接定义变量
+                </div>
+            </li>
+            <li><p>形式三：无名结构体类型（仅用于一次性变量）</p>
+                <div class="code-block">
+                    struct {
+                    char name[20];
+                    int age;
+                    float score;
+                    } stud1, stud2;  // 无类型名，无法复用
+                </div>
+            </li>
+        </ol>
+
+        <h5>8.1.3 结构体变量的初始化</h5>
+        <p>按成员顺序赋值，支持嵌套结构体初始化，未赋值成员自动为0（数值类型）或空（字符类型）：</p>
+        <div class="code-block">
+            // 基础初始化
+            struct stud {
+            long num;
+            char name[20];
+            char sex;
+            char addr[30];
+            } st1 = {9708, "Liwei", 'F', "44BeijingRoad"};
+
+            // 嵌套结构体初始化（日期+人员信息）
+            struct date {
+            int month;
+            int day;
+            int year;
+            };
+            struct person {
+            char name[20];
+            struct date birthday;
+            int age;
+            } p1 = {"Zhang San", {10, 1, 2000}, 24};
+        </div>
+
+        <h5>8.1.4 结构体变量的引用</h5>
+        <p>通过“成员运算符（.）”访问成员，嵌套结构体需逐级访问：</p>
+        <div class="code-block">
+            #include <stdio.h>
+            void main() {
+            struct student {
+            char name[20];
+            int age;
+            float score;
+            } stu = {"Li Si", 19, 89.5};
+
+            // 访问普通成员
+            printf("姓名：%s\n", stu.name);
+            printf("年龄：%d\n", stu.age);
+            stu.score = 92.0;  // 修改成员值
+            printf("成绩：%.1f\n", stu.score);
+
+            // 嵌套结构体访问
+            struct date { int m, d, y; };
+            struct person {
+            char name[20];
+            struct date birth;
+            } p = {"Wang Wu", {5, 20, 2001}};
+            printf("生日：%d年%d月%d日\n", p.birth.y, p.birth.m, p.birth.d);
+            }
+        </div>
+
+        <h5>8.1.5 结构体变量的输入输出</h5>
+        <p>C语言不支持结构体整体输入输出，需逐个成员操作：</p>
+        <div class="code-block">
+            #include <stdio.h>
+            void main() {
+            struct student {
+            char name[20];
+            int age;
+            float score;
+            } stu;
+
+            // 输入
+            printf("请输入姓名、年龄、成绩：\n");
+            scanf("%s %d %f", stu.name, &stu.age, &stu.score);  // 字符数组无需&
+
+            // 输出
+            printf("姓名：%s\n年龄：%d\n成绩：%.1f\n", stu.name, stu.age, stu.score);
+            }
+        </div>
+
+        <hr />
+        <p>&nbsp;</p>
+
+        <h4>8.2 结构体数组</h4>
+        <p>结构体数组是元素为结构体类型的数组，核心用于存储多个同类型复杂对象（如多个学生、多个商品）。</p>
+
+        <h5>8.2.1 结构体数组的定义</h5>
+        <p>三种定义形式，与结构体变量定义逻辑一致：</p>
+        <ol>
+            <li><p>先定义类型，再定义数组</p>
+                <div class="code-block">
+                    struct student {
+                    long num;
+                    char name[20];
+                    float score;
+                    };
+                    struct student stud[100];  // 100个学生的数组
+                </div>
+            </li>
+            <li><p>定义类型同时定义数组</p>
+                <div class="code-block">
+                    struct student {
+                    long num;
+                    char name[20];
+                    float score;
+                    } stud[100];
+                </div>
+            </li>
+            <li><p>无名类型直接定义数组</p>
+                <div class="code-block">
+                    struct {
+                    long num;
+                    char name[20];
+                    float score;
+                    } stud[100];
+                </div>
+            </li>
+        </ol>
+
+        <h5>8.2.2 结构体数组的初始化</h5>
+        <p>按数组元素顺序，逐个结构体赋值，支持部分成员初始化：</p>
+        <div class="code-block">
+            struct student {
+            long num;
+            char name[20];
+            int age;
+            float score;
+            } stud[3] = {
+            {9701, "LiMing", 20, 98.0},    // 第1个元素
+            {9702, "WangDan", 20, 95.0},   // 第2个元素
+            {9703, "LiHui", 19, 80.0}     // 第3个元素
+            };
+        </div>
+
+        <h5>8.2.3 结构体数组的引用与输入输出</h5>
+        <p>通过“数组下标+成员运算符”访问元素成员，输入输出需遍历数组：</p>
+        <div class="code-block">
+            #include <stdio.h>
+            void main() {
+            struct student {
+            long num;
+            char name[20];
+            float score;
+            } stud[3] = {
+            {9701, "LiMing", 98.0},
+            {9702, "WangDan", 95.0},
+            {9703, "LiHui", 80.0}
+            };
+
+            // 输出所有学生信息
+            for (int i = 0; i < 3; i++) {
+            printf("学号：%ld，姓名：%s，成绩：%.1f\n",
+            stud[i].num, stud[i].name, stud[i].score);
+            }
+
+            // 输入新学生信息
+            struct student new_stud[2];
+            for (int i = 0; i < 2; i++) {
+            printf("请输入第%d个学生的学号、姓名、成绩：\n", i+1);
+            scanf("%ld %s %f", &new_stud[i].num, new_stud[i].name, &new_stud[i].score);
+            }
+            }
+        </div>
+
+        <hr />
+        <p>&nbsp;</p>
+
+        <h4>8.3 定义类型（typedef）</h4>
+        <p>typedef用于为已有类型定义别名，简化复杂类型描述（如结构体、数组、指针），提升代码可读性和可移植性。</p>
+
+        <h5>8.3.1 typedef的基本格式</h5>
+        <div class="code-block">
+            typedef 原类型 新类型名;
+        </div>
+
+        <h5>8.3.2 常见应用场景</h5>
+        <ol>
+            <li><p>基本类型别名</p>
+                <div class="code-block">
+                    typedef unsigned long int ULI;
+                    ULI x = 123456789;  // 等价于 unsigned long int x;
+                </div>
+            </li>
+            <li><p>数组类型别名</p>
+                <div class="code-block">
+                    typedef double VECT4[4];  // 定义“4个double元素的数组”类型
+                    VECT4 v1, v2;  // 等价于 double v1[4], v2[4];
+
+                    typedef double MAT[5][5];  // 5×5双精度数组类型
+                    MAT a1, a2;  // 等价于 double a1[5][5], a2[5][5];
+                </div>
+            </li>
+            <li><p>指针类型别名</p>
+                <div class="code-block">
+                    typedef int *IP;
+                    IP p1, p2;  // 等价于 int *p1, *p2;（注意：不同于#define MIP int *，后者会导致p2为int类型）
+                </div>
+            </li>
+            <li><p>结构体类型别名（最常用）</p>
+                <div class="code-block">
+                    // 方式1：先定义结构体，再typedef
+                    struct student {
+                    char name[20];
+                    int age;
+                    };
+                    typedef struct student SD;
+
+                    // 方式2：定义结构体同时typedef
+                    typedef struct student {
+                    char name[20];
+                    int age;
+                    } SD;
+
+                    // 方式3：无名结构体typedef
+                    typedef struct {
+                    char name[20];
+                    int age;
+                    } SD;
+
+                    SD stu1, stu2;  // 简化结构体变量定义，无需写struct
+                </div>
+            </li>
+        </ol>
+
+        <h5>8.3.3 typedef与#define的区别</h5>
+        <table>
+            <thead>
+            <tr><th>特性</th><th>typedef</th><th>#define</th></tr></thead>
+            <tbody>
+            <tr><td>本质</td><td>类型别名定义（编译阶段处理）</td><td>文本替换（预处理阶段处理）</td></tr>
+            <tr><td>作用范围</td><td>局部或全局（遵循作用域规则）</td><td>全局（从定义处到文件结束）</td></tr>
+            <tr><td>指针类型处理</td><td>可正确定义多个指针</td><td>可能导致错误（如#define MIP int *; MIP p1,p2; 中p2为int类型）</td></tr>
+            <tr><td>数组类型处理</td><td>可定义数组类型别名</td><td>仅文本替换，无法定义数组类型</td></tr>
+            </tbody>
+        </table>
+
+        <hr />
+        <p>&nbsp;</p>
+
+        <h4>8.4 指针与结构体</h4>
+        <p>结构体指针是指向结构体变量/数组的指针，通过“指向运算符（-&gt;）”访问成员，比直接使用结构体变量更高效（传递地址而非整个结构体）。</p>
+
+        <h5>8.4.1 指向结构体变量的指针</h5>
+        <ol>
+            <li><p>定义与初始化</p>
+                <div class="code-block">
+                    struct student {
+                    char name[20];
+                    int age;
+                    float score;
+                    } stu = {"Zhang San", 20, 90.5}, *p;
+                    p = &stu;  // 指针指向结构体变量stu
+                </div>
+            </li>
+            <li><p>访问成员的两种方式</p>
+                <div class="code-block">
+                    #include <stdio.h>
+                    void main() {
+                    struct student {
+                    char name[20];
+                    int age;
+                    float score;
+                    } stu = {"Zhang San", 20, 90.5}, *p = &stu;
+
+                    // 方式1：(*p).成员名（括号不可省，.优先级高于*）
+                    printf("姓名：%s\n", (*p).name);
+
+                    // 方式2：p->成员名（结构体指针专用，推荐）
+                    printf("年龄：%d\n", p->age);
+                    printf("成绩：%.1f\n", p->score);
+
+                    // 修改成员值
+                    p->age = 21;
+                    (*p).score = 92.0;
+                    printf("修改后：年龄%d，成绩%.1f\n", p->age, p->score);
+                    }
+                </div>
+            </li>
+        </ol>
+
+        <h5>8.4.2 指向结构体数组的指针</h5>
+        <p>结构体数组名是数组首元素地址，指针可通过算术运算遍历数组：</p>
+        <div class="code-block">
+            #include <stdio.h>
+            void main() {
+            struct student {
+            long num;
+            char name[20];
+            float score;
+            } stud[3] = {
+            {9701, "LiMing", 98.0},
+            {9702, "WangDan", 95.0},
+            {9703, "LiHui", 80.0}
+            }, *p = stud;  // 指向数组首元素
+
+            // 遍历数组（三种方式等价）
+            for (int i = 0; i < 3; i++) {
+            printf("学号：%ld，姓名：%s，成绩：%.1f\n",
+            (p+i)->num,  // 指针偏移
+            p[i].name,   // 数组下标
+            (*(p+i)).score);  // 解引用+成员运算符
+            }
+            }
+        </div>
+
+        <h5>8.4.3 结构体指针作为函数参数</h5>
+        <p>传递结构体指针，避免结构体拷贝（节省内存），支持修改结构体内容，是结构体函数参数的首选方式。</p>
+        <ol>
+            <li>示例1：计算学生成绩总分与平均分</li>
+        </ol>
+        <div class="code-block">
+            #include <stdio.h>
+            #define N 5
+            // 定义结构体类型
+            typedef struct stud {
+            char name[10];
+            int s[3];  // 三门课成绩
+            int sum;
+            float ave;
+            } STUD;
+
+            // 结构体指针作为参数
+            void count(STUD *p) {
+            p->sum = 0;
+            for (int j = 0; j < 3; j++) {
+            p->sum += p->s[j];
+            }
+            p->ave = p->sum / 3.0;
+            }
+
+            void main() {
+            STUD a[N];
+            int i;
+            // 输入学生信息
+            for (i = 0; i < N; i++) {
+            printf("请输入第%d个学生的姓名和三门课成绩：\n", i+1);
+            scanf("%s %d %d %d", a[i].name, &a[i].s[0], &a[i].s[1], &a[i].s[2]);
+            count(&a[i]);  // 传递结构体地址
+            }
+            // 输出结果
+            for (i = 0; i < N; i++) {
+            printf("姓名：%10s，成绩：%4d %4d %4d，总分：%6d，平均分：%.1f\n",
+            a[i].name, a[i].s[0], a[i].s[1], a[i].s[2], a[i].sum, a[i].ave);
+            }
+            }
+        </div>
+        <ol start='2'>
+            <li>示例2：结构体数组指针遍历（打印学生信息）</li>
+        </ol>
+        <div class="code-block">
+            #include <stdio.h>
+            typedef struct student {
+            long num;
+            char name[20];
+            char sex;
+            int age;
+            double score;
+            char addr[30];
+            } STU;
+
+            // 结构体数组指针作为参数
+            void printStu(STU *p, int n) {
+            for (; p < p + n; p++) {
+            printf("学号：%ld，姓名：%s，性别：%c，年龄：%d，成绩：%.2f，地址：%s\n",
+            p->num, p->name, p->sex, p->age, p->score, p->addr);
+            }
+            }
+
+            void main() {
+            STU a[3] = {
+            {99641, "Li Ping", 'M', 20, 56.0, "Tianjin Street"},
+            {99341, "Zhang Fan", 'F', 21, 78.0, "Beijing Road"},
+            {99441, "Ren Zhong", 'M', 19, 84.0, "Shenyang Road"}
+            };
+            printStu(a, 3);  // 传递数组名（首元素地址）
+            }
+        </div>
+
+        <h5>8.4.4 结构体指针的进阶应用（动态内存分配）</h5>
+        <p>结合<code>malloc</code>动态分配结构体内存，灵活处理不确定数量的结构体数据：</p>
+        <div class="code-block">
+            #include <stdio.h>
+            #include <stdlib.h>
+            typedef struct BOOK {
+            char Name[50];
+            double Price;
+            int Pages;
+            } BOOK;
+
+            // 动态分配n本图书内存
+            BOOK *createBooks(int n) {
+            BOOK *p = (BOOK *)malloc(n * sizeof(BOOK));
+            if (p == NULL) {
+            printf("内存分配失败\n");
+            exit(1);
+            }
+            return p;
+            }
+
+            // 释放动态内存
+            void freeBooks(BOOK *p) {
+            free(p);
+            p = NULL;
+            }
+
+            void main() {
+            int n;
+            printf("请输入图书数量：");
+            scanf("%d", &n);
+            BOOK *books = createBooks(n);
+
+            // 输入图书信息
+            for (int i = 0; i < n; i++) {
+            printf("请输入第%d本书的书名、价格、页数：\n", i+1);
+            scanf("%s %lf %d", books[i].Name, &books[i].Price, &books[i].Pages);
+            }
+
+            // 输出图书信息
+            for (int i = 0; i < n; i++) {
+            printf("书名：%s，价格：%.2f，页数：%d\n",
+            (books+i)->Name, (books+i)->Price, (books+i)->Pages);
+            }
+
+            freeBooks(books);
+            }
+        </div>
+        <p>&nbsp;</p>
+
+        <!-- 章节导航按钮 -->
+        <div class="chapter-nav">
+            <a href="Chap7.html" class="chapter-btn">上一章</a>
+            <a href="../../c_lang.html" class="chapter-btn catalog-btn">返回目录</a>
+            <a href="Chap9.html" class="chapter-btn">下一章</a>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer>
+        © 2026 kayiwen - C语言学习笔记 | 持续更新中
+    </footer>
+</main>
+
+<!-- 子菜单展开/折叠脚本 -->
+<script>
+    const notesTrigger = document.getElementById('notes-trigger');
+    const notesSubmenu = document.getElementById('notes-submenu');
+
+    notesTrigger.addEventListener('click', (e) => {
+        e.preventDefault();
+        notesSubmenu.classList.toggle('submenu-open');
+    });
+</script>
+</body>
+</html>
